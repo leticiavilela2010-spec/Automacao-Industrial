@@ -1,0 +1,603 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Eletricidade Básica</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=Source+Sans+3:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<style>
+  :root{
+    --bg:#eef1f4;
+    --surface:#ffffff;
+    --surface-2:#e3e8ec;
+    --ink:#12161b;
+    --muted:#57626c;
+    --line:#c7cfd6;
+    --accent:#c2660c;
+    --accent-ink:#7a3f05;
+    --accent-soft:#f4dfc3;
+    --good:#2f7d4f;
+    --neutral-wire:#3f6fb5;
+    --danger:#b3261e;
+    --shadow: 0 1px 0 rgba(18,22,27,.04);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0d1013;
+      --surface:#171b1f;
+      --surface-2:#20262c;
+      --ink:#eef1f4;
+      --muted:#9aa5b0;
+      --line:#2c333a;
+      --accent:#e08a2e;
+      --accent-ink:#ffd8a8;
+      --accent-soft:#3a2a14;
+      --good:#4fae7a;
+      --neutral-wire:#7ea6e0;
+      --danger:#e06a63;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0d1013;
+    --surface:#171b1f;
+    --surface-2:#20262c;
+    --ink:#eef1f4;
+    --muted:#9aa5b0;
+    --line:#2c333a;
+    --accent:#e08a2e;
+    --accent-ink:#ffd8a8;
+    --accent-soft:#3a2a14;
+    --good:#4fae7a;
+    --neutral-wire:#7ea6e0;
+    --danger:#e06a63;
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"Source Sans 3", ui-sans-serif, system-ui, sans-serif;
+    padding-inline:20px;
+    padding-block:0 64px;
+  }
+  .wrap{max-width:880px; margin:0 auto;}
+
+  h1,h2,h3{
+    font-family:"Big Shoulders Display", "Arial Narrow", sans-serif;
+    font-weight:800;
+    text-transform:uppercase;
+    letter-spacing:.02em;
+    text-wrap:balance;
+    margin:0;
+  }
+  .mono{font-family:"JetBrains Mono", ui-monospace, monospace;}
+
+  /* ---------- Nameplate header ---------- */
+  .nameplate{
+    background:var(--surface-2);
+    border-bottom:3px solid var(--accent);
+    margin-inline:-20px;
+    padding:44px 20px 28px;
+  }
+  .nameplate-inner{max-width:880px; margin:0 auto;}
+  .eyebrow{
+    display:flex; align-items:center; gap:10px;
+    font-family:"JetBrains Mono", monospace;
+    font-size:.72rem; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--accent-ink);
+    margin-bottom:10px;
+  }
+  .eyebrow::before{
+    content:""; width:22px; height:2px; background:var(--accent); display:inline-block;
+  }
+  .nameplate h1{
+    font-size:clamp(2.4rem, 6vw, 3.6rem);
+    line-height:.96;
+    color:var(--ink);
+  }
+  .nameplate p{
+    max-width:56ch;
+    color:var(--muted);
+    font-size:1.05rem;
+    line-height:1.55;
+    margin-top:14px;
+  }
+  .badge-row{
+    display:flex; flex-wrap:wrap; gap:8px;
+    margin-top:22px;
+  }
+  .badge{
+    font-family:"JetBrains Mono", monospace;
+    font-size:.78rem;
+    background:var(--surface);
+    border:1px solid var(--line);
+    color:var(--muted);
+    padding:6px 10px;
+    border-radius:3px;
+  }
+  .badge b{color:var(--accent-ink); font-weight:700;}
+
+  /* ---------- Section scaffolding ---------- */
+  section{padding-block:46px; border-bottom:1px solid var(--line);}
+  section:last-of-type{border-bottom:none;}
+  .section-head{
+    display:flex; align-items:baseline; gap:14px;
+    margin-bottom:22px;
+  }
+  .section-num{
+    font-family:"JetBrains Mono", monospace;
+    font-size:.8rem;
+    color:var(--muted);
+    border:1px solid var(--line);
+    border-radius:3px;
+    padding:2px 7px;
+    flex:none;
+  }
+  h2{font-size:1.55rem;}
+  .lede{color:var(--muted); line-height:1.6; max-width:66ch; font-size:1rem;}
+
+  /* ---------- Grandezas tiles ---------- */
+  .quantities{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(170px,1fr));
+    gap:1px;
+    background:var(--line);
+    border:1px solid var(--line);
+    margin-top:24px;
+  }
+  .quantity{
+    background:var(--surface);
+    padding:20px 18px;
+    display:flex; flex-direction:column; gap:6px;
+  }
+  .quantity .sym{
+    font-family:"Big Shoulders Display", sans-serif;
+    font-weight:800;
+    font-size:2.6rem;
+    color:var(--accent);
+    line-height:1;
+  }
+  .quantity .name{font-weight:600; font-size:.98rem;}
+  .quantity .unit{
+    font-family:"JetBrains Mono", monospace;
+    font-size:.78rem;
+    color:var(--muted);
+  }
+  .quantity .def{font-size:.86rem; color:var(--muted); line-height:1.4;}
+
+  /* ---------- Ohm's law ---------- */
+  .ohm-grid{
+    display:grid;
+    grid-template-columns:minmax(190px,220px) 1fr;
+    gap:32px;
+    align-items:center;
+    margin-top:24px;
+  }
+  @media (max-width:560px){ .ohm-grid{grid-template-columns:1fr;} }
+  .triangle-box{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:18px;
+  }
+  .readout{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-left:3px solid var(--accent);
+    border-radius:4px;
+    padding:18px 20px;
+  }
+  .readout .formula{
+    font-family:"JetBrains Mono", monospace;
+    font-size:1.15rem;
+    font-weight:700;
+    color:var(--accent-ink);
+    margin-bottom:10px;
+  }
+  .readout p{margin:0; color:var(--muted); line-height:1.55; font-size:.95rem;}
+  .worked{
+    margin-top:14px;
+    font-family:"JetBrains Mono", monospace;
+    font-size:.86rem;
+    color:var(--ink);
+    background:var(--surface-2);
+    padding:10px 12px;
+    border-radius:3px;
+    line-height:1.7;
+  }
+
+  /* ---------- Power formulas ---------- */
+  .formula-row{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+    gap:12px;
+    margin-top:22px;
+  }
+  .formula-card{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:16px 18px;
+    text-align:center;
+  }
+  .formula-card .f{
+    font-family:"JetBrains Mono", monospace;
+    font-size:1.35rem;
+    font-weight:700;
+    color:var(--accent-ink);
+  }
+  .formula-card .u{
+    font-size:.78rem;
+    color:var(--muted);
+    margin-top:6px;
+  }
+
+  /* ---------- CC vs CA ---------- */
+  .compare{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px;
+    margin-top:24px;
+  }
+  @media (max-width:560px){ .compare{grid-template-columns:1fr;} }
+  .compare-card{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:20px;
+  }
+  .compare-card h3{
+    font-size:1.1rem;
+    display:flex; align-items:center; gap:10px;
+    margin-bottom:4px;
+  }
+  .compare-card .tag{
+    font-family:"JetBrains Mono", monospace;
+    font-size:.72rem;
+    color:var(--muted);
+    text-transform:none;
+    letter-spacing:0;
+    font-weight:400;
+  }
+  .compare-card svg{margin:14px 0 10px; display:block;}
+  .compare-card ul{
+    margin:0; padding-left:1.1em; color:var(--muted); font-size:.9rem; line-height:1.65;
+  }
+  .compare-card li::marker{color:var(--accent);}
+
+  /* ---------- Series / Parallel ---------- */
+  .circuits{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px;
+    margin-top:24px;
+  }
+  @media (max-width:560px){ .circuits{grid-template-columns:1fr;} }
+  .circuit-card{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:18px;
+  }
+  .circuit-card h3{font-size:1.05rem; margin-bottom:12px;}
+  .circuit-card .caption{
+    font-size:.85rem; color:var(--muted); line-height:1.55; margin-top:10px;
+  }
+  .circuit-card .eq{
+    font-family:"JetBrains Mono", monospace;
+    font-size:.82rem;
+    color:var(--accent-ink);
+    margin-top:8px;
+  }
+
+  /* ---------- Wire colors ---------- */
+  .wire-list{
+    display:flex; flex-direction:column; gap:1px;
+    background:var(--line);
+    border:1px solid var(--line);
+    margin-top:24px;
+    border-radius:4px;
+    overflow:hidden;
+  }
+  .wire-row{
+    background:var(--surface);
+    display:grid;
+    grid-template-columns:56px 130px 1fr;
+    align-items:center;
+    gap:16px;
+    padding:12px 16px;
+  }
+  @media (max-width:560px){ .wire-row{grid-template-columns:40px 1fr; row-gap:4px;} .wire-row .wr-desc{grid-column:2;} }
+  .swatch{
+    width:36px; height:14px; border-radius:2px; border:1px solid rgba(0,0,0,.15);
+  }
+  .wr-name{font-weight:600; font-size:.92rem;}
+  .wr-desc{color:var(--muted); font-size:.86rem;}
+  .note{
+    font-size:.8rem; color:var(--muted); margin-top:12px; line-height:1.5;
+  }
+
+  /* ---------- Safety ---------- */
+  .safety{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:4px;
+    overflow:hidden;
+  }
+  .safety-head{
+    background:repeating-linear-gradient(135deg, var(--accent) 0 10px, var(--surface-2) 10px 20px);
+    height:8px;
+  }
+  .safety-body{padding:22px 22px 20px;}
+  .safety-body ul{
+    margin:0; padding:0; list-style:none;
+    display:grid; gap:12px;
+  }
+  .safety-body li{
+    display:flex; gap:12px; align-items:flex-start;
+    font-size:.94rem; line-height:1.5; color:var(--ink);
+  }
+  .safety-body li .ico{
+    flex:none;
+    width:22px; height:22px;
+    border:2px solid var(--danger);
+    border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-family:"JetBrains Mono", monospace;
+    font-weight:700; font-size:.8rem; color:var(--danger);
+  }
+
+  /* ---------- Glossary / footer ---------- */
+  .glossary{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(220px,1fr));
+    gap:18px 28px;
+    margin-top:22px;
+  }
+  .glossary dt{
+    font-family:"JetBrains Mono", monospace;
+    font-weight:700; font-size:.86rem; color:var(--accent-ink);
+  }
+  .glossary dd{
+    margin:3px 0 0; color:var(--muted); font-size:.86rem; line-height:1.5;
+  }
+  footer{
+    padding-top:36px;
+    color:var(--muted);
+    font-size:.82rem;
+    display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap;
+  }
+</style>
+</head>
+<body>
+
+<div class="nameplate">
+  <div class="nameplate-inner">
+    <div class="eyebrow">Guia de referência</div>
+    <h1>Eletricidade Básica</h1>
+    <p>Como a carga elétrica vira corrente, como medir tensão e resistência, e como ler um circuito — do fio ao disjuntor.</p>
+    <div class="badge-row">
+      <span class="badge"><b>V</b> tensão · volt</span>
+      <span class="badge"><b>I</b> corrente · ampère</span>
+      <span class="badge"><b>R</b> resistência · ohm</span>
+      <span class="badge"><b>P</b> potência · watt</span>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <section>
+    <div class="section-head"><span class="section-num">01</span><h2>O que é eletricidade</h2></div>
+    <p class="lede">
+      Todo material é feito de átomos, e todo átomo carrega elétrons livres que podem se mover. Quando esses elétrons
+      fluem de forma ordenada por um fio, chamamos isso de <strong>corrente elétrica</strong>. Para o fluxo acontecer,
+      é preciso uma diferença de potencial — a <strong>tensão</strong> — empurrando os elétrons de um ponto a outro,
+      e o material do caminho sempre oferece alguma <strong>resistência</strong> a esse movimento.
+    </p>
+    <p class="lede" style="margin-top:12px;">
+      A analogia clássica é a hidráulica: tensão é como a pressão da água, corrente é a vazão que passa pelo cano,
+      e resistência é o quanto o cano é estreito. Mais pressão ou menos estreitamento — mais vazão.
+    </p>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">02</span><h2>Grandezas fundamentais</h2></div>
+    <p class="lede">Quatro grandezas descrevem qualquer circuito elétrico. Todas as fórmulas do resto desta página nascem delas.</p>
+    <div class="quantities">
+      <div class="quantity">
+        <span class="sym">V</span>
+        <span class="name">Tensão</span>
+        <span class="unit">volt (V)</span>
+        <span class="def">A força que empurra os elétrons entre dois pontos do circuito.</span>
+      </div>
+      <div class="quantity">
+        <span class="sym">I</span>
+        <span class="name">Corrente</span>
+        <span class="unit">ampère (A)</span>
+        <span class="def">A quantidade de carga que passa por um ponto do fio a cada segundo.</span>
+      </div>
+      <div class="quantity">
+        <span class="sym">R</span>
+        <span class="name">Resistência</span>
+        <span class="unit">ohm (Ω)</span>
+        <span class="def">A oposição que um material oferece à passagem da corrente.</span>
+      </div>
+      <div class="quantity">
+        <span class="sym">P</span>
+        <span class="name">Potência</span>
+        <span class="unit">watt (W)</span>
+        <span class="def">A taxa com que a energia elétrica é convertida — em luz, calor, movimento.</span>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">03</span><h2>Lei de Ohm</h2></div>
+    <p class="lede">A relação mais usada em eletricidade: a tensão é igual à corrente vezes a resistência.</p>
+    <div class="ohm-grid">
+      <div class="triangle-box">
+        <svg viewBox="0 0 200 176" width="100%" role="img" aria-label="Triângulo da Lei de Ohm: V dividido por I vezes R">
+          <polygon points="100,14 186,160 14,160" fill="none" stroke="var(--line)" stroke-width="2"/>
+          <line x1="14" y1="112" x2="186" y2="112" stroke="var(--line)" stroke-width="2"/>
+          <line x1="76" y1="160" x2="124" y2="112" stroke="var(--line)" stroke-width="2"/>
+          <text x="100" y="86" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="700" font-size="30" fill="var(--accent)">V</text>
+          <text x="52" y="144" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="700" font-size="24" fill="var(--ink)">I</text>
+          <text x="148" y="144" text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="700" font-size="24" fill="var(--ink)">R</text>
+        </svg>
+      </div>
+      <div class="readout">
+        <div class="formula">V = I × R</div>
+        <p>Cubra a grandeza que você quer descobrir: sobra a operação entre as outras duas.
+        Para achar a corrente, I = V ÷ R. Para achar a resistência, R = V ÷ I.</p>
+        <div class="worked">
+          exemplo — lâmpada de 12V, resistência de 24Ω<br>
+          I = V ÷ R = 12 ÷ 24 = <strong>0,5 A</strong>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">04</span><h2>Potência elétrica</h2></div>
+    <p class="lede">A potência combina tensão e corrente — e, substituindo a Lei de Ohm, pode ser escrita de três formas equivalentes.</p>
+    <div class="formula-row">
+      <div class="formula-card"><div class="f">P = V × I</div><div class="u">forma padrão</div></div>
+      <div class="formula-card"><div class="f">P = I² × R</div><div class="u">sem a tensão</div></div>
+      <div class="formula-card"><div class="f">P = V² ÷ R</div><div class="u">sem a corrente</div></div>
+    </div>
+    <p class="lede" style="margin-top:18px;">
+      É por isso que um chuveiro (alta potência) puxa muito mais corrente que uma lâmpada de LED —
+      e por que a conta de luz cobra em <span class="mono">kWh</span>: potência multiplicada pelo tempo de uso.
+    </p>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">05</span><h2>Corrente contínua × alternada</h2></div>
+    <p class="lede">A corrente pode fluir sempre no mesmo sentido, ou trocar de sentido continuamente. As duas formas convivem em qualquer instalação.</p>
+    <div class="compare">
+      <div class="compare-card">
+        <h3>CC <span class="tag">corrente contínua</span></h3>
+        <svg viewBox="0 0 220 60" width="100%" height="60" role="img" aria-label="Gráfico de corrente contínua: linha reta constante">
+          <line x1="10" y1="30" x2="210" y2="30" stroke="var(--accent)" stroke-width="3"/>
+        </svg>
+        <ul>
+          <li>Flui sempre no mesmo sentido, com intensidade constante</li>
+          <li>Fonte: pilhas, baterias, painéis solares, USB</li>
+          <li>Símbolo em equipamentos: <span class="mono">⎓</span></li>
+        </ul>
+      </div>
+      <div class="compare-card">
+        <h3>CA <span class="tag">corrente alternada</span></h3>
+        <svg viewBox="0 0 220 60" width="100%" height="60" role="img" aria-label="Gráfico de corrente alternada: onda senoidal">
+          <path d="M10,30 C 30,5 50,5 70,30 C 90,55 110,55 130,30 C 150,5 170,5 190,30 C 200,42 205,42 210,30" fill="none" stroke="var(--accent)" stroke-width="3"/>
+        </svg>
+        <ul>
+          <li>Inverte o sentido periodicamente, em onda senoidal</li>
+          <li>Fonte: rede elétrica — no Brasil, 60 Hz, 127V ou 220V</li>
+          <li>Símbolo em equipamentos: <span class="mono">~</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">06</span><h2>Circuitos em série e paralelo</h2></div>
+    <p class="lede">A forma como os componentes se ligam muda como tensão, corrente e resistência se distribuem entre eles.</p>
+    <div class="circuits">
+      <div class="circuit-card">
+        <h3>Em série</h3>
+        <svg viewBox="0 0 240 80" width="100%" height="80" role="img" aria-label="Diagrama de circuito em série com dois resistores">
+          <line x1="16" y1="16" x2="224" y2="16" stroke="var(--ink)" stroke-width="2"/>
+          <line x1="16" y1="16" x2="16" y2="64" stroke="var(--ink)" stroke-width="2"/>
+          <line x1="224" y1="16" x2="224" y2="64" stroke="var(--ink)" stroke-width="2"/>
+          <line x1="16" y1="64" x2="224" y2="64" stroke="var(--ink)" stroke-width="2"/>
+          <rect x="46" y="6" width="52" height="20" fill="var(--surface)" stroke="var(--accent)" stroke-width="2"/>
+          <text x="72" y="21" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12" fill="var(--accent-ink)">R1</text>
+          <rect x="142" y="6" width="52" height="20" fill="var(--surface)" stroke="var(--accent)" stroke-width="2"/>
+          <text x="168" y="21" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12" fill="var(--accent-ink)">R2</text>
+        </svg>
+        <div class="caption">Um único caminho. A mesma corrente passa por todos os componentes; as tensões se somam.</div>
+        <div class="eq">R total = R1 + R2</div>
+      </div>
+      <div class="circuit-card">
+        <h3>Em paralelo</h3>
+        <svg viewBox="0 0 240 80" width="100%" height="80" role="img" aria-label="Diagrama de circuito em paralelo com dois resistores">
+          <line x1="16" y1="12" x2="224" y2="12" stroke="var(--ink)" stroke-width="2"/>
+          <line x1="16" y1="68" x2="224" y2="68" stroke="var(--ink)" stroke-width="2"/>
+          <line x1="70" y1="12" x2="70" y2="30" stroke="var(--ink)" stroke-width="2"/>
+          <line x1="70" y1="50" x2="70" y2="68" stroke="var(--ink)" stroke-width="2"/>
+          <line x1="170" y1="12" x2="170" y2="30" stroke="var(--ink)" stroke-width="2"/>
+          <line x1="170" y1="50" x2="170" y2="68" stroke="var(--ink)" stroke-width="2"/>
+          <rect x="50" y="30" width="40" height="20" fill="var(--surface)" stroke="var(--accent)" stroke-width="2"/>
+          <text x="70" y="45" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12" fill="var(--accent-ink)">R1</text>
+          <rect x="150" y="30" width="40" height="20" fill="var(--surface)" stroke="var(--accent)" stroke-width="2"/>
+          <text x="170" y="45" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="12" fill="var(--accent-ink)">R2</text>
+        </svg>
+        <div class="caption">Vários caminhos. A mesma tensão é aplicada a cada um; as correntes se somam.</div>
+        <div class="eq">1/R total = 1/R1 + 1/R2</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">07</span><h2>Código de cores dos fios</h2></div>
+    <p class="lede">Na instalação residencial brasileira (norma NBR 5410), a cor do isolamento indica a função do condutor.</p>
+    <div class="wire-list">
+      <div class="wire-row">
+        <span class="swatch" style="background:#1a1a1a;"></span>
+        <span class="wr-name">Fase</span>
+        <span class="wr-desc">Preto, vermelho, marrom ou branco — conduz a tensão. Sempre trate como energizado.</span>
+      </div>
+      <div class="wire-row">
+        <span class="swatch" style="background:#5b9bd5;"></span>
+        <span class="wr-name">Neutro</span>
+        <span class="wr-desc">Azul-claro — fecha o circuito de volta à origem, em tensão próxima de zero em relação à terra.</span>
+      </div>
+      <div class="wire-row">
+        <span class="swatch" style="background:linear-gradient(90deg,#2f7d4f 50%, #e0c82e 50%);"></span>
+        <span class="wr-name">Terra (PE)</span>
+        <span class="wr-desc">Verde ou verde-amarelo listrado — desvia falhas de isolamento para o solo, protegendo pessoas.</span>
+      </div>
+    </div>
+    <p class="note">A cor é uma convenção, não uma garantia: antes de tocar em qualquer fio, confirme com um multímetro que o circuito está desenergizado.</p>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">08</span><h2>Segurança básica</h2></div>
+    <div class="safety">
+      <div class="safety-head"></div>
+      <div class="safety-body">
+        <ul>
+          <li><span class="ico">!</span>Desligue o disjuntor do circuito antes de mexer em qualquer fiação — nunca trabalhe com a rede energizada.</li>
+          <li><span class="ico">!</span>Use um disjuntor DR (diferencial residual) em banheiros, áreas externas e cozinhas, onde há água por perto.</li>
+          <li><span class="ico">!</span>Respeite a corrente máxima de fios e disjuntores — fio fino com disjuntor grande demais é a principal causa de incêndio elétrico.</li>
+          <li><span class="ico">!</span>Evite benjamins e réguas empilhadas: cada tomada tem um limite de potência, e ultrapassá-lo aquece os contatos.</li>
+          <li><span class="ico">!</span>Nunca toque em fios desencapados ou em qualquer instalação com as mãos molhadas.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head"><span class="section-num">09</span><h2>Glossário rápido</h2></div>
+    <dl class="glossary">
+      <div><dt>Disjuntor</dt><dd>Dispositivo que interrompe o circuito automaticamente quando a corrente ultrapassa um limite seguro.</dd></div>
+      <div><dt>Curto-circuito</dt><dd>Caminho de resistência quase zero criado por acidente, que gera um pico de corrente perigoso.</dd></div>
+      <div><dt>Aterramento</dt><dd>Ligação de partes metálicas ao solo, para escoar correntes de falha com segurança.</dd></div>
+      <div><dt>kWh</dt><dd>Quilowatt-hora — unidade de energia usada na conta de luz: potência em uso multiplicada pelo tempo.</dd></div>
+      <div><dt>Multímetro</dt><dd>Instrumento que mede tensão, corrente e resistência em um circuito.</dd></div>
+      <div><dt>Condutor / isolante</dt><dd>Materiais que, respectivamente, deixam ou não deixam a corrente passar com facilidade — cobre e borracha, por exemplo.</dd></div>
+    </dl>
+  </section>
+
+  <footer>
+    <span>Eletricidade Básica — guia de referência</span>
+    <span>Valores de rede citados: padrão brasileiro (60 Hz)</span>
+  </footer>
+
+</div>
+</body>
+</html>
