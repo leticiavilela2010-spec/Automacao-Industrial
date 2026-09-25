@@ -1,0 +1,999 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jogo de Digitação</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=Source+Sans+3:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<style>
+  :root{
+    --bg:#eef1f4;
+    --surface:#ffffff;
+    --surface-2:#e3e8ec;
+    --ink:#12161b;
+    --muted:#57626c;
+    --line:#c7cfd6;
+    --accent:#c2660c;
+    --accent-ink:#7a3f05;
+    --accent-soft:#f4dfc3;
+    --good:#2f7d4f;
+    --good-soft:#d8ecdf;
+    --danger:#b3261e;
+    --danger-soft:#f3d9d6;
+    --robo:#0f7d8c;
+    --robo-ink:#0b5560;
+    --robo-soft:rgba(15,125,140,.10);
+    --grid-line:rgba(18,22,27,.05);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0a0d10;
+      --surface:#12171b;
+      --surface-2:#1a2126;
+      --ink:#eef1f4;
+      --muted:#94a3ac;
+      --line:#242e35;
+      --accent:#e08a2e;
+      --accent-ink:#ffd8a8;
+      --accent-soft:#3a2a14;
+      --good:#4fae7a;
+      --good-soft:#173323;
+      --danger:#e06a63;
+      --danger-soft:#3a1a17;
+      --robo:#35d0e0;
+      --robo-ink:#8fe9f2;
+      --robo-soft:rgba(53,208,224,.14);
+      --grid-line:rgba(120,220,230,.06);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0a0d10;
+    --surface:#12171b;
+    --surface-2:#1a2126;
+    --ink:#eef1f4;
+    --muted:#94a3ac;
+    --line:#242e35;
+    --accent:#e08a2e;
+    --accent-ink:#ffd8a8;
+    --accent-soft:#3a2a14;
+    --good:#4fae7a;
+    --good-soft:#173323;
+    --danger:#e06a63;
+    --danger-soft:#3a1a17;
+    --robo:#35d0e0;
+    --robo-ink:#8fe9f2;
+    --robo-soft:rgba(53,208,224,.14);
+    --grid-line:rgba(120,220,230,.06);
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:
+      linear-gradient(var(--grid-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px),
+      var(--bg);
+    background-size:32px 32px, 32px 32px, auto;
+    color:var(--ink);
+    font-family:"Source Sans 3", ui-sans-serif, system-ui, sans-serif;
+    padding-inline:20px;
+    padding-block:0 64px;
+  }
+  .wrap{max-width:980px; margin:0 auto;}
+  button{font-family:inherit;}
+
+  h1,h2,h3{
+    font-family:"Big Shoulders Display", "Arial Narrow", sans-serif;
+    font-weight:800;
+    text-transform:uppercase;
+    letter-spacing:.02em;
+    text-wrap:balance;
+    margin:0;
+  }
+  .mono{font-family:"JetBrains Mono", ui-monospace, monospace;}
+
+  /* ---------- Nameplate header ---------- */
+  .nameplate{
+    background:var(--surface-2);
+    border-bottom:3px solid var(--accent);
+    margin-inline:-20px;
+    padding:40px 20px 26px;
+  }
+  .nameplate-inner{
+    max-width:980px; margin:0 auto;
+    display:flex; align-items:flex-end; justify-content:space-between;
+    gap:24px; flex-wrap:wrap;
+  }
+  .nameplate-text{flex:1 1 320px; min-width:0;}
+  .eyebrow{
+    display:flex; align-items:center; flex-wrap:wrap; gap:8px 10px;
+    font-family:"JetBrains Mono", monospace;
+    font-size:.72rem; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--accent-ink);
+    margin-bottom:10px;
+    white-space:nowrap;
+  }
+  .eyebrow::before{
+    content:""; width:22px; height:2px; background:var(--accent); display:inline-block;
+  }
+  .eyebrow .sep{color:var(--muted); opacity:.6;}
+  .eyebrow .robo-tag{color:var(--robo-ink);}
+  .nameplate h1{
+    font-size:clamp(2.1rem, 5.4vw, 3.2rem);
+    line-height:.98;
+    color:var(--ink);
+  }
+  .nameplate p{
+    max-width:64ch;
+    color:var(--muted);
+    font-size:1rem;
+    line-height:1.55;
+    margin-top:12px;
+  }
+
+  /* ---------- Robot mascot ---------- */
+  .robot-mascot{
+    flex:none;
+    width:clamp(78px, 15vw, 118px);
+  }
+  .robot-mascot svg{display:block; width:100%; height:auto; overflow:visible;}
+  .robot-eye{
+    fill:var(--muted);
+    transform-origin:center;
+    transform-box:fill-box;
+    animation:robotBlink 4.2s ease-in-out infinite;
+  }
+  .robot-eye-happy{display:none;}
+  .robot-mouth{stroke:var(--muted);}
+  .robot-mouth-happy{display:none;}
+  .robot-antenna-light, .robot-chest-light{fill:var(--muted);}
+  @keyframes robotBlink{
+    0%, 90%, 100%{transform:scaleY(1);}
+    95%{transform:scaleY(.15);}
+  }
+  @keyframes robotEyeGlow{ from{opacity:1;} to{opacity:.5;} }
+
+  .robot-mascot.state-active .robot-eye{
+    fill:var(--robo);
+    animation:robotEyeGlow .6s ease-in-out infinite alternate;
+  }
+  .robot-mascot.state-active .robot-mouth{stroke:var(--robo);}
+  .robot-mascot.state-active .robot-antenna-light,
+  .robot-mascot.state-active .robot-chest-light{
+    fill:var(--robo);
+    filter:drop-shadow(0 0 4px var(--robo));
+    animation:pulse 1s ease-in-out infinite;
+  }
+
+  .robot-mascot.state-done .robot-eye{display:none;}
+  .robot-mascot.state-done .robot-eye-happy{display:block;}
+  .robot-mascot.state-done .robot-mouth{display:none;}
+  .robot-mascot.state-done .robot-mouth-happy{display:block;}
+  .robot-mascot.state-done .robot-antenna-light,
+  .robot-mascot.state-done .robot-chest-light{
+    fill:var(--good);
+    filter:drop-shadow(0 0 4px var(--good));
+  }
+
+  .rank-robot{
+    width:14px; height:14px; flex:none;
+    color:var(--robo-ink);
+  }
+
+  .btn-ghost{
+    background:var(--surface);
+    border:1px solid var(--line);
+    color:var(--ink);
+    font-size:.86rem;
+    font-weight:600;
+    padding:9px 16px;
+    border-radius:3px;
+    cursor:pointer;
+  }
+  .btn-ghost:hover{border-color:var(--accent);}
+  .btn-primary{
+    background:var(--accent);
+    border:1px solid var(--accent);
+    color:#1a1200;
+    font-weight:700;
+    font-size:.92rem;
+    padding:11px 20px;
+    border-radius:3px;
+    cursor:pointer;
+  }
+  .btn-primary:hover{filter:brightness(1.06);}
+
+  section{padding-block:32px;}
+
+  /* ---------- Student identification ---------- */
+  .student-bar{
+    display:flex; align-items:center; gap:10px 14px; flex-wrap:wrap;
+    margin-bottom:16px;
+  }
+  .student-bar label{
+    font-family:"JetBrains Mono", monospace;
+    font-size:.72rem; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--muted);
+  }
+  .student-name-input{
+    flex:1 1 220px; max-width:320px;
+    background:var(--surface);
+    border:1px solid var(--line);
+    color:var(--ink);
+    font-family:"JetBrains Mono", monospace;
+    font-size:.92rem;
+    padding:9px 12px;
+    border-radius:3px;
+  }
+  .student-name-input:focus{outline:none; border-color:var(--robo);}
+  .student-hint{
+    font-family:"JetBrains Mono", monospace;
+    font-size:.72rem;
+    color:var(--muted);
+  }
+
+  /* ---------- Stats bar ---------- */
+  .stats-bar{
+    display:flex; gap:1px;
+    background:var(--line);
+    border:1px solid var(--line);
+    border-radius:4px;
+    overflow:hidden;
+    margin-bottom:18px;
+    flex-wrap:wrap;
+  }
+  .stat{
+    flex:1 1 100px;
+    background:var(--surface);
+    padding:12px 14px;
+  }
+  .stat-label{
+    font-family:"JetBrains Mono", monospace;
+    font-size:.66rem;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:var(--muted);
+  }
+  .stat-value{
+    font-family:"JetBrains Mono", monospace;
+    font-size:1.25rem;
+    font-weight:700;
+    color:var(--robo-ink);
+    margin-top:2px;
+  }
+  .stat-value.status-row{
+    display:flex; align-items:center; gap:7px;
+    font-size:.95rem;
+  }
+  .status-dot{
+    width:9px; height:9px; border-radius:50%; flex:none;
+    background:var(--muted);
+  }
+  .status-dot.active{
+    background:var(--robo);
+    box-shadow:0 0 7px var(--robo);
+    animation:pulse 1s ease-in-out infinite;
+  }
+  .status-dot.done{
+    background:var(--good);
+    box-shadow:0 0 7px var(--good);
+  }
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+
+  .progress-track{
+    height:6px;
+    background:var(--surface-2);
+    border:1px solid var(--line);
+    border-radius:99px;
+    overflow:hidden;
+    margin-bottom:22px;
+  }
+  .progress-fill{
+    height:100%;
+    width:0%;
+    background:var(--robo);
+    border-radius:99px;
+    transition:width .12s linear;
+  }
+
+  /* ---------- Game layout: text + ranking ---------- */
+  .game-layout{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) 270px;
+    gap:24px;
+    align-items:start;
+  }
+  @media (max-width:760px){ .game-layout{grid-template-columns:1fr;} }
+
+  /* ---------- HUD frame (robotics targeting corners) ---------- */
+  .hud-frame{position:relative;}
+  .hud-corner{
+    position:absolute; width:16px; height:16px;
+    border:2px solid var(--robo);
+    pointer-events:none;
+  }
+  .hud-corner.tl{top:-1px; left:-1px; border-right:none; border-bottom:none;}
+  .hud-corner.tr{top:-1px; right:-1px; border-left:none; border-bottom:none;}
+  .hud-corner.bl{bottom:-1px; left:-1px; border-right:none; border-top:none;}
+  .hud-corner.br{bottom:-1px; right:-1px; border-left:none; border-top:none;}
+
+  /* ---------- Passage ---------- */
+  .passage-card{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-left:3px solid var(--accent);
+    border-radius:4px;
+    padding:22px 24px;
+    cursor:text;
+  }
+  .terminal-label{
+    display:flex; align-items:center; gap:8px;
+    font-family:"JetBrains Mono", monospace;
+    font-size:.72rem;
+    letter-spacing:.06em;
+    color:var(--robo-ink);
+    margin-bottom:12px;
+  }
+  .terminal-label::before{
+    content:"▍";
+    color:var(--robo);
+    animation:blinkCursor 1s step-end infinite;
+  }
+  @keyframes blinkCursor{0%,50%{opacity:1;}51%,100%{opacity:0;}}
+
+  .passage{
+    font-family:"JetBrains Mono", ui-monospace, monospace;
+    font-size:1.18rem;
+    line-height:1.9;
+    letter-spacing:.01em;
+    color:var(--muted);
+  }
+  .ch{transition:color .05s ease, background-color .05s ease;}
+  .ch.pending{color:var(--muted);}
+  .ch.correct{color:var(--good);}
+  .ch.incorrect{color:var(--danger); background:var(--danger-soft); border-radius:2px;}
+  .ch.current{
+    background:var(--robo-soft);
+    border-bottom:2px solid var(--robo);
+    border-radius:2px;
+    animation:blink 1s step-end infinite;
+  }
+  @keyframes blink{
+    0%, 55%{background:var(--robo-soft);}
+    56%, 100%{background:transparent;}
+  }
+
+  .type-input{
+    width:100%;
+    margin-top:18px;
+    background:var(--surface-2);
+    border:1px solid var(--line);
+    color:var(--ink);
+    font-family:"JetBrains Mono", monospace;
+    font-size:1rem;
+    padding:12px 14px;
+    border-radius:3px;
+  }
+  .type-input:focus{outline:none; border-color:var(--robo);}
+  .type-input:disabled{opacity:.6;}
+  .type-input::placeholder{color:var(--muted);}
+
+  .hint{
+    color:var(--muted);
+    font-size:.86rem;
+    margin-top:10px;
+  }
+
+  .result-banner[hidden]{display:none;}
+  .result-banner{
+    margin-top:18px;
+    background:var(--good-soft);
+    border:1px solid var(--good);
+    border-radius:4px;
+    padding:14px 16px;
+    display:flex; align-items:center; justify-content:space-between;
+    gap:14px; flex-wrap:wrap;
+  }
+  .result-banner p{margin:0; color:var(--good); font-size:.92rem; line-height:1.5;}
+  .result-banner p b{color:var(--good);}
+
+  .actions{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:12px; flex-wrap:wrap;
+    margin-top:22px;
+  }
+  .actions-hint{
+    font-family:"JetBrains Mono", monospace;
+    font-size:.8rem;
+    color:var(--muted);
+  }
+
+  /* ---------- Ranking sidebar ---------- */
+  .ranking-panel{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-left:3px solid var(--robo);
+    border-radius:4px;
+    padding:18px;
+    display:flex; flex-direction:column; gap:2px;
+  }
+  .ranking-panel-head{
+    display:flex; align-items:center; justify-content:space-between; gap:8px;
+  }
+  .ranking-panel h2{font-size:1rem; color:var(--ink);}
+  .rank-refresh{
+    background:none; border:1px solid var(--line); color:var(--muted);
+    width:26px; height:26px; border-radius:3px; flex:none;
+    font-size:.9rem; line-height:1; cursor:pointer;
+  }
+  .rank-refresh:hover{border-color:var(--robo); color:var(--robo-ink);}
+  .rank-refresh:disabled{opacity:.5; cursor:default;}
+  .ranking-sub{
+    font-family:"JetBrains Mono", monospace;
+    font-size:.72rem;
+    color:var(--muted);
+    margin-bottom:10px;
+  }
+  .rank-list{display:flex; flex-direction:column;}
+  .rank-name{
+    font-size:.82rem;
+    font-weight:600;
+    color:var(--ink);
+  }
+  .rank-item{
+    display:flex; align-items:center; gap:10px;
+    padding:9px 0;
+    border-top:1px solid var(--line);
+  }
+  .rank-item:first-of-type{border-top:none;}
+  .rank-item.current{
+    background:var(--robo-soft);
+    margin-inline:-10px; padding-inline:10px;
+    border-radius:3px; border-top-color:transparent;
+  }
+  .rank-pos{
+    font-family:"JetBrains Mono", monospace;
+    font-weight:700;
+    font-size:.82rem;
+    color:var(--robo-ink);
+    width:20px; flex:none; text-align:center;
+  }
+  .rank-info{flex:1; min-width:0; display:flex; flex-direction:column;}
+  .rank-score{
+    display:flex; align-items:center; gap:5px;
+    font-family:"JetBrains Mono", monospace;
+    font-weight:700;
+    font-size:.9rem;
+    color:var(--ink);
+  }
+  .rank-meta{
+    font-family:"JetBrains Mono", monospace;
+    font-size:.7rem;
+    color:var(--muted);
+  }
+  .rank-empty{color:var(--muted); font-size:.86rem; line-height:1.5; padding-top:6px;}
+
+  footer{
+    padding-top:36px;
+    color:var(--muted);
+    font-size:.82rem;
+    display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap;
+  }
+</style>
+</head>
+<body>
+
+<div class="nameplate">
+  <div class="nameplate-inner">
+    <div class="nameplate-text">
+      <div class="eyebrow">Jogo educativo <span class="sep">·</span> <span class="robo-tag">Treinamento de operador robótico</span></div>
+      <h1>Jogo de Digitação</h1>
+      <p>Digite o texto abaixo com a velocidade e a precisão de um operador de célula robótica. Cada letra correta pontua, completar uma palavra certa dá um bônus extra, e cada rodada finalizada entra no ranking ao lado.</p>
+    </div>
+    <div class="robot-mascot state-ready" id="robot-mascot" aria-hidden="true">
+      <svg viewBox="0 0 120 148">
+        <line x1="60" y1="10" x2="60" y2="24" stroke="var(--line)" stroke-width="3" stroke-linecap="round"/>
+        <circle class="robot-antenna-light" cx="60" cy="7" r="6"/>
+        <path d="M10 146 C10 104 30 92 60 92 C90 92 110 104 110 146 Z" fill="var(--surface)" stroke="var(--line)" stroke-width="2.5"/>
+        <rect x="44" y="100" width="32" height="20" rx="4" fill="var(--surface-2)" stroke="var(--line)" stroke-width="1.5"/>
+        <circle class="robot-chest-light" cx="60" cy="110" r="4"/>
+        <circle cx="14" cy="53" r="7" fill="var(--surface-2)" stroke="var(--line)" stroke-width="2"/>
+        <circle cx="106" cy="53" r="7" fill="var(--surface-2)" stroke="var(--line)" stroke-width="2"/>
+        <rect x="18" y="24" width="84" height="58" rx="16" fill="var(--surface-2)" stroke="var(--line)" stroke-width="2.5"/>
+        <rect x="30" y="40" width="60" height="26" rx="10" fill="var(--ink)" opacity=".07"/>
+        <circle class="robot-eye" cx="46" cy="53" r="6"/>
+        <circle class="robot-eye" cx="74" cy="53" r="6"/>
+        <path class="robot-eye-happy" d="M40 55 Q46 47 52 55" stroke="var(--good)" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <path class="robot-eye-happy" d="M68 55 Q74 47 80 55" stroke="var(--good)" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <line class="robot-mouth" x1="48" y1="70" x2="72" y2="70" stroke-width="3" stroke-linecap="round"/>
+        <path class="robot-mouth-happy" d="M46 68 Q60 80 74 68" stroke="var(--good)" stroke-width="3" fill="none" stroke-linecap="round"/>
+      </svg>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <section>
+    <div class="student-bar">
+      <label for="student-name">Nome do aluno</label>
+      <input type="text" id="student-name" class="student-name-input" placeholder="Digite seu nome para liberar a digitação" maxlength="40" autocomplete="off">
+      <span class="student-hint">Obrigatório para aparecer no ranking da turma</span>
+    </div>
+
+    <div class="stats-bar">
+      <div class="stat"><div class="stat-label">Pontos</div><div class="stat-value" id="stat-score">0</div></div>
+      <div class="stat"><div class="stat-label">Precisão</div><div class="stat-value" id="stat-accuracy">100%</div></div>
+      <div class="stat"><div class="stat-label">PPM</div><div class="stat-value" id="stat-wpm">0</div></div>
+      <div class="stat"><div class="stat-label">Tempo</div><div class="stat-value" id="stat-time">00:00</div></div>
+      <div class="stat"><div class="stat-label">Erros</div><div class="stat-value" id="stat-errors">0</div></div>
+      <div class="stat"><div class="stat-label">Status</div><div class="stat-value status-row"><span class="status-dot" id="status-dot"></span><span id="status-label">Pronto</span></div></div>
+    </div>
+
+    <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+
+    <div class="game-layout">
+      <div class="main-col">
+        <div class="hud-frame">
+          <span class="hud-corner tl"></span><span class="hud-corner tr"></span>
+          <span class="hud-corner bl"></span><span class="hud-corner br"></span>
+          <div class="passage-card" id="passage-card">
+            <div class="terminal-label" id="terminal-label">MÓDULO_DE_DIGITAÇÃO — TEXTO 1/8</div>
+            <div class="passage" id="passage"></div>
+            <input type="text" id="type-input" class="type-input" placeholder="Clique aqui e comece a digitar..."
+                   autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
+            <p class="hint">Clique no texto ou no campo acima para focar e comece a digitar. O cronômetro inicia na primeira letra.</p>
+          </div>
+        </div>
+
+        <div class="result-banner" id="result-banner" hidden>
+          <p id="result-text"></p>
+        </div>
+
+        <div class="actions">
+          <span class="actions-hint">Pontue e suba no ranking!</span>
+          <button type="button" class="btn-primary" id="btn-new-round">Novo texto</button>
+        </div>
+      </div>
+
+      <aside class="ranking-panel">
+        <div class="ranking-panel-head">
+          <h2>Ranking</h2>
+          <button type="button" class="rank-refresh" id="btn-refresh-ranking" title="Atualizar ranking">↻</button>
+        </div>
+        <div class="ranking-sub" id="ranking-sub">Melhores tentativas neste navegador</div>
+        <div class="rank-list" id="ranking-list"></div>
+      </aside>
+    </div>
+  </section>
+
+  <footer>
+    <span>Jogo de Digitação — atividade gamificada</span>
+    <span>Ranking salvo neste navegador e, se configurado, na planilha da turma</span>
+  </footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var RANKING_KEY = "typing-game-ranking-v1";
+  var NAME_KEY = "typing-game-student-name";
+  var LETTER_POINTS = 10;
+  var WORD_BONUS = 50;
+  var MAX_RANKING_STORED = 30;
+  var MAX_RANKING_SHOWN = 10;
+
+  // ---------- Ranking da turma via Google Sheets (sem banco de dados) ----------
+  // O script pronto para colar no Google Apps Script está no arquivo
+  // apps-script-ranking.gs (na raiz deste repositório). Passo a passo:
+  // 1. Crie uma planilha nova em sheets.google.com.
+  // 2. Menu Extensões > Apps Script, apague o conteúdo e cole o arquivo
+  //    apps-script-ranking.gs inteiro.
+  // 3. Implantar > Nova implantação > tipo "App da Web".
+  //    Executar como: Eu. Quem pode acessar: Qualquer pessoa. Implantar e autorizar.
+  // 4. Copie a URL do app da web (termina em /exec) e cole em SHEET_WEBAPP_URL abaixo.
+  //    Enquanto ficar vazio, o jogo usa só o ranking local deste navegador.
+  var SHEET_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbwAVNqYextvAFgfkZUglDVm3WbzG5mY4SnJ6Cuym1AbZ1ZiWS6XbqWqhXyPBxG724TFEQ/exec";
+  // Só preencha se você também definiu SHARED_SECRET no apps-script-ranking.gs.
+  var SHEET_SHARED_SECRET = "";
+  var CLASS_RANKING_POLL_MS = 20000; // atualização automática do ranking da turma
+  var ROBOT_ICON_SVG = '<svg class="rank-robot" viewBox="0 0 24 24" aria-hidden="true">'+
+    '<rect x="5" y="9" width="14" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="1.6"/>'+
+    '<line x1="12" y1="9" x2="12" y2="5" stroke="currentColor" stroke-width="1.6"/>'+
+    '<circle cx="12" cy="3.4" r="1.6" fill="currentColor"/>'+
+    '<circle cx="9.5" cy="14.5" r="1.4" fill="currentColor"/>'+
+    '<circle cx="14.5" cy="14.5" r="1.4" fill="currentColor"/>'+
+    '<line x1="3" y1="13" x2="5" y2="13" stroke="currentColor" stroke-width="1.6"/>'+
+    '<line x1="19" y1="13" x2="21" y2="13" stroke="currentColor" stroke-width="1.6"/>'+
+    '</svg>';
+
+  var TEXTS = [
+    "A automação industrial utiliza sensores, atuadores e controladores para executar processos com precisão e repetibilidade. Um CLP recebe sinais de entrada, processa a lógica programada e comanda as saídas que acionam motores, válvulas e outros dispositivos da linha de produção.",
+    "Sensores indutivos detectam metais sem contato físico, enquanto sensores capacitivos identificam materiais metálicos e não metálicos. Já os sensores fotoelétricos usam feixes de luz para localizar objetos, sendo muito usados em esteiras e linhas de inspeção.",
+    "Antes de qualquer manutenção em um painel elétrico é preciso desenergizar o circuito, aplicar o bloqueio e etiquetagem e confirmar a ausência de tensão com um multímetro. Seguir esse procedimento evita acidentes graves e protege a vida do profissional.",
+    "Cilindros pneumáticos convertem a energia do ar comprimido em movimento linear, enquanto motores elétricos trifásicos são amplamente usados por serem robustos e de baixo custo. Um inversor de frequência permite controlar a velocidade desses motores com precisão.",
+    "Em uma malha de controle fechada, o sensor mede a variável do processo e envia o sinal ao controlador, que compara com o setpoint e ajusta o atuador. Essa realimentação contínua mantém a temperatura, a pressão ou o nível dentro da faixa desejada.",
+    "Um sistema SCADA permite supervisionar equipamentos distribuídos em uma planta industrial, exibindo dados em tempo real e registrando alarmes. Operadores usam essa interface para tomar decisões rápidas e manter a produção funcionando com segurança.",
+    "Um braço robótico industrial possui múltiplos graus de liberdade, permitindo movimentos de rotação e translação em diferentes eixos. Cada junta é controlada por um servomotor com encoder, garantindo posicionamento preciso durante a montagem e a soldagem automatizada.",
+    "Robôs colaborativos, conhecidos como cobots, trabalham lado a lado com humanos em células de produção. Sensores de força e visão computacional garantem que o robô pare imediatamente ao detectar contato inesperado, tornando a operação mais segura."
+  ];
+
+  var els = {
+    studentName: document.getElementById("student-name"),
+    passage: document.getElementById("passage"),
+    passageCard: document.getElementById("passage-card"),
+    terminalLabel: document.getElementById("terminal-label"),
+    input: document.getElementById("type-input"),
+    progressFill: document.getElementById("progress-fill"),
+    statScore: document.getElementById("stat-score"),
+    statAccuracy: document.getElementById("stat-accuracy"),
+    statWpm: document.getElementById("stat-wpm"),
+    statTime: document.getElementById("stat-time"),
+    statErrors: document.getElementById("stat-errors"),
+    statusDot: document.getElementById("status-dot"),
+    statusLabel: document.getElementById("status-label"),
+    robotMascot: document.getElementById("robot-mascot"),
+    resultBanner: document.getElementById("result-banner"),
+    resultText: document.getElementById("result-text"),
+    rankingList: document.getElementById("ranking-list"),
+    rankingSub: document.getElementById("ranking-sub"),
+    btnRefreshRanking: document.getElementById("btn-refresh-ranking"),
+    btnNewRound: document.getElementById("btn-new-round")
+  };
+
+  var state = null;
+  var lastEntryTs = null;
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, function(c){
+      return { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c];
+    });
+  }
+
+  function loadStudentName(){
+    try{ return localStorage.getItem(NAME_KEY) || ""; }catch(e){ return ""; }
+  }
+  function saveStudentName(v){
+    try{ localStorage.setItem(NAME_KEY, v); }catch(e){}
+  }
+  function hasName(){
+    return els.studentName.value.trim().length > 0;
+  }
+  function syncNameGate(){
+    if(!state || state.finished) return;
+    els.input.disabled = !hasName();
+    els.input.placeholder = hasName() ? "Clique aqui e comece a digitar..." : "Digite seu nome acima primeiro...";
+  }
+
+  function loadRanking(){
+    try{
+      var raw = localStorage.getItem(RANKING_KEY);
+      if(raw){
+        var v = JSON.parse(raw);
+        if(Array.isArray(v)) return v;
+      }
+    }catch(e){}
+    return [];
+  }
+  function saveRanking(list){
+    try{ localStorage.setItem(RANKING_KEY, JSON.stringify(list)); }catch(e){}
+  }
+  function recordScore(entry){
+    var list = loadRanking();
+    list.push(entry);
+    list.sort(function(a,b){ return b.score - a.score; });
+    if(list.length > MAX_RANKING_STORED) list = list.slice(0, MAX_RANKING_STORED);
+    saveRanking(list);
+    lastEntryTs = entry.ts;
+
+    if(SHEET_WEBAPP_URL){
+      submitScoreToSheet(entry);
+      renderRankingRows(list.slice(0, MAX_RANKING_SHOWN), "local");
+      setTimeout(refreshClassRanking, 1200);
+    }else{
+      renderRankingRows(list.slice(0, MAX_RANKING_SHOWN), "local");
+    }
+  }
+
+  function renderRankingRows(list, source){
+    els.rankingSub.textContent = source === "sheet"
+      ? "Ranking da turma (ao vivo, via Google Sheets)"
+      : SHEET_WEBAPP_URL
+        ? "Sem conexão com a planilha — mostrando pontuações deste navegador"
+        : "Melhores tentativas neste navegador";
+    if(list.length === 0){
+      els.rankingList.innerHTML = '<p class="rank-empty">Nenhuma pontuação registrada ainda. Termine um texto para entrar no ranking!</p>';
+      return;
+    }
+    var html = "";
+    list.forEach(function(entry, i){
+      var pos = i+1;
+      var posStr = pos < 10 ? "0"+pos : String(pos);
+      var time = new Date(entry.ts).toLocaleTimeString("pt-BR", { hour:"2-digit", minute:"2-digit" });
+      var isCurrent = entry.ts === lastEntryTs;
+      html += '<div class="rank-item'+(isCurrent ? " current" : "")+'">'+
+        '<span class="rank-pos">'+posStr+'</span>'+
+        '<span class="rank-info">'+
+          '<span class="rank-name">'+escapeHtml(entry.name || "Anônimo")+'</span>'+
+          '<span class="rank-score">'+ROBOT_ICON_SVG+entry.score+' pts</span>'+
+          '<span class="rank-meta">'+entry.wpm+' ppm · '+entry.accuracy+'% · '+time+'</span>'+
+        '</span>'+
+      '</div>';
+    });
+    els.rankingList.innerHTML = html;
+  }
+
+  function submitScoreToSheet(entry){
+    if(!SHEET_WEBAPP_URL) return;
+    var payload = {
+      name: entry.name, score: entry.score, wpm: entry.wpm,
+      accuracy: entry.accuracy, mistakes: entry.mistakes
+    };
+    if(SHEET_SHARED_SECRET) payload.secret = SHEET_SHARED_SECRET;
+    try{
+      fetch(SHEET_WEBAPP_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(payload)
+      }).catch(function(){});
+    }catch(e){}
+  }
+
+  function fetchClassRankingJSONP(){
+    return new Promise(function(resolve, reject){
+      if(!SHEET_WEBAPP_URL){ reject(new Error("not configured")); return; }
+      var cbName = "__typingRankingCb" + Date.now() + Math.floor(Math.random()*1000);
+      var script = document.createElement("script");
+      var timeoutId = setTimeout(function(){ cleanup(); reject(new Error("timeout")); }, 8000);
+      function cleanup(){
+        clearTimeout(timeoutId);
+        delete window[cbName];
+        if(script.parentNode) script.parentNode.removeChild(script);
+      }
+      window[cbName] = function(data){ cleanup(); resolve(data); };
+      script.src = SHEET_WEBAPP_URL + (SHEET_WEBAPP_URL.indexOf("?") >= 0 ? "&" : "?") + "callback=" + cbName;
+      script.onerror = function(){ cleanup(); reject(new Error("script error")); };
+      document.body.appendChild(script);
+    });
+  }
+
+  function refreshClassRanking(){
+    if(!SHEET_WEBAPP_URL){
+      renderRankingRows(loadRanking().slice(0, MAX_RANKING_SHOWN), "local");
+      return;
+    }
+    els.btnRefreshRanking.disabled = true;
+    fetchClassRankingJSONP().then(function(rows){
+      var mapped = rows.map(function(r){
+        return {
+          name: r.name || "Anônimo",
+          score: Number(r.score) || 0,
+          wpm: Number(r.wpm) || 0,
+          accuracy: Number(r.accuracy) || 0,
+          mistakes: Number(r.mistakes) || 0,
+          ts: Date.parse(r.date) || 0
+        };
+      });
+      mapped.sort(function(a,b){ return b.score - a.score; });
+      renderRankingRows(mapped.slice(0, MAX_RANKING_SHOWN), "sheet");
+    }).catch(function(){
+      renderRankingRows(loadRanking().slice(0, MAX_RANKING_SHOWN), "local");
+    }).then(function(){
+      els.btnRefreshRanking.disabled = false;
+    });
+  }
+
+  function pickTextIndex(excludeIdx){
+    if(TEXTS.length <= 1) return 0;
+    var idx;
+    do{ idx = Math.floor(Math.random()*TEXTS.length); }while(idx === excludeIdx);
+    return idx;
+  }
+
+  function buildWordsMeta(text){
+    var words = [], start = 0;
+    for(var i=0;i<=text.length;i++){
+      if(i === text.length || text[i] === " "){
+        if(i > start) words.push({ start:start, end:i });
+        start = i+1;
+      }
+    }
+    return words;
+  }
+
+  function formatTime(secs){
+    var s = Math.floor(secs);
+    var m = Math.floor(s/60);
+    var r = s%60;
+    return (m<10?"0":"")+m+":"+(r<10?"0":"")+r;
+  }
+
+  function setStatus(kind){
+    els.statusDot.className = "status-dot" + (kind === "active" ? " active" : kind === "done" ? " done" : "");
+    els.statusLabel.textContent = kind === "active" ? "Digitando..." : kind === "done" ? "Concluído" : "Pronto";
+    els.robotMascot.className = "robot-mascot state-" + kind;
+  }
+
+  function newRound(){
+    var prevIdx = state ? state.textIdx : null;
+    var idx = pickTextIndex(prevIdx);
+    var text = TEXTS[idx];
+    var words = buildWordsMeta(text);
+    state = {
+      textIdx: idx,
+      text: text,
+      words: words,
+      scored: new Array(text.length).fill(false),
+      wordScored: words.map(function(){ return false; }),
+      score: 0,
+      totalKeys: 0,
+      correctKeys: 0,
+      mistakes: 0,
+      startTime: null,
+      endTime: null,
+      finished: false,
+      timerId: null,
+      prevLen: 0,
+      spans: []
+    };
+    els.terminalLabel.textContent = "MÓDULO_DE_DIGITAÇÃO — TEXTO " + (idx+1) + "/" + TEXTS.length;
+    renderPassage();
+    els.input.value = "";
+    els.input.maxLength = text.length;
+    els.resultBanner.hidden = true;
+    setStatus("ready");
+    updateStatsDisplay();
+    syncNameGate();
+    if(hasName()){ els.input.focus(); }else{ els.studentName.focus(); }
+  }
+
+  function renderPassage(){
+    var frag = document.createDocumentFragment();
+    var spans = [];
+    for(var i=0;i<state.text.length;i++){
+      var span = document.createElement("span");
+      span.className = i === 0 ? "ch current" : "ch pending";
+      span.textContent = state.text[i];
+      frag.appendChild(span);
+      spans.push(span);
+    }
+    els.passage.innerHTML = "";
+    els.passage.appendChild(frag);
+    state.spans = spans;
+  }
+
+  function updateHighlight(val){
+    for(var i=0;i<state.spans.length;i++){
+      var cls = "ch";
+      if(i < val.length){
+        cls += (val[i] === state.text[i]) ? " correct" : " incorrect";
+      }else if(i === val.length){
+        cls += " current";
+      }else{
+        cls += " pending";
+      }
+      state.spans[i].className = cls;
+    }
+  }
+
+  function checkWords(val){
+    state.words.forEach(function(w, wi){
+      if(state.wordScored[wi]) return;
+      var isLast = wi === state.words.length-1;
+      var boundary = isLast ? w.end : w.end+1;
+      if(val.length >= boundary){
+        state.wordScored[wi] = true;
+        var typedWord = val.slice(w.start, w.end);
+        var targetWord = state.text.slice(w.start, w.end);
+        if(typedWord === targetWord){
+          state.score += WORD_BONUS;
+        }
+      }
+    });
+  }
+
+  function elapsedSeconds(){
+    if(!state.startTime) return 0;
+    var end = state.finished ? state.endTime : Date.now();
+    return (end - state.startTime)/1000;
+  }
+
+  function updateStatsDisplay(){
+    var secs = elapsedSeconds();
+    var mins = secs/60;
+    var acc = state.totalKeys ? Math.round(100*state.correctKeys/state.totalKeys) : 100;
+    var wpm = mins > 0 ? Math.round((state.correctKeys/5)/mins) : 0;
+    els.statScore.textContent = state.score;
+    els.statAccuracy.textContent = acc + "%";
+    els.statWpm.textContent = wpm;
+    els.statTime.textContent = formatTime(secs);
+    els.statErrors.textContent = state.mistakes;
+    var progress = Math.min(100, Math.round(100*els.input.value.length/state.text.length));
+    els.progressFill.style.width = progress + "%";
+  }
+
+  function startTimer(){
+    state.timerId = setInterval(updateStatsDisplay, 250);
+  }
+  function stopTimer(){
+    if(state.timerId){ clearInterval(state.timerId); state.timerId = null; }
+  }
+
+  function finishRound(){
+    if(state.finished) return;
+    state.finished = true;
+    state.endTime = Date.now();
+    stopTimer();
+    els.input.disabled = true;
+    updateStatsDisplay();
+    setStatus("done");
+
+    var secs = elapsedSeconds();
+    var mins = secs/60;
+    var wpm = mins > 0 ? Math.round((state.correctKeys/5)/mins) : 0;
+    var acc = state.totalKeys ? Math.round(100*state.correctKeys/state.totalKeys) : 100;
+
+    var entry = { name: els.studentName.value.trim() || "Anônimo", score: state.score, wpm: wpm, accuracy: acc, mistakes: state.mistakes, ts: Date.now() };
+    recordScore(entry);
+    var isTop = loadRanking().slice().sort(function(a,b){ return b.score-a.score; })[0].ts === entry.ts;
+
+    els.resultBanner.hidden = false;
+    els.resultText.innerHTML = "Concluído! Pontuação: <b>"+state.score+"</b> · PPM: <b>"+wpm+"</b> · Precisão: <b>"+acc+"%</b> · Erros: <b>"+state.mistakes+"</b>" + (isTop ? " · <b>novo recorde local!</b>" : "");
+  }
+
+  function onType(){
+    var val = els.input.value;
+    if(!state.startTime){
+      state.startTime = Date.now();
+      startTimer();
+      setStatus("active");
+    }
+    if(val.length > state.prevLen){
+      for(var i=state.prevLen;i<val.length;i++){
+        if(i >= state.text.length) break;
+        state.totalKeys++;
+        if(val[i] === state.text[i]){
+          state.correctKeys++;
+          if(!state.scored[i] && state.text[i] !== " "){
+            state.scored[i] = true;
+            state.score += LETTER_POINTS;
+          }
+        }else{
+          state.mistakes++;
+        }
+      }
+    }
+    state.prevLen = val.length;
+    checkWords(val);
+    updateHighlight(val);
+    updateStatsDisplay();
+    if(val.length >= state.text.length){
+      finishRound();
+    }
+  }
+
+  els.input.addEventListener("input", onType);
+  els.passageCard.addEventListener("click", function(){
+    if(!hasName()){ els.studentName.focus(); return; }
+    if(state && !state.finished) els.input.focus();
+  });
+  els.btnNewRound.addEventListener("click", newRound);
+  els.studentName.addEventListener("input", function(){
+    saveStudentName(els.studentName.value);
+    syncNameGate();
+  });
+  els.btnRefreshRanking.addEventListener("click", refreshClassRanking);
+
+  els.studentName.value = loadStudentName();
+  renderRankingRows(loadRanking().slice(0, MAX_RANKING_SHOWN), "local");
+  if(SHEET_WEBAPP_URL){
+    refreshClassRanking();
+    setInterval(refreshClassRanking, CLASS_RANKING_POLL_MS);
+  }
+  newRound();
+})();
+</script>
+</body>
+</html>

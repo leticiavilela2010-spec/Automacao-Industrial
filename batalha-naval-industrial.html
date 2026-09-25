@@ -1,0 +1,1229 @@
+python<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Batalha Naval Industrial</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=Source+Sans+3:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<style>
+  :root{
+    --bg:#eef1f4;
+    --surface:#ffffff;
+    --surface-2:#e3e8ec;
+    --ink:#12161b;
+    --muted:#57626c;
+    --line:#c7cfd6;
+    --accent:#c2660c;
+    --accent-ink:#7a3f05;
+    --accent-soft:#f4dfc3;
+    --good:#2f7d4f;
+    --good-soft:#d8ecdf;
+    --neutral-wire:#3f6fb5;
+    --neutral-wire-soft:#dbe6f5;
+    --danger:#b3261e;
+    --danger-soft:#f3d9d6;
+    --shadow: 0 1px 0 rgba(18,22,27,.04);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0d1013;
+      --surface:#171b1f;
+      --surface-2:#20262c;
+      --ink:#eef1f4;
+      --muted:#9aa5b0;
+      --line:#2c333a;
+      --accent:#e08a2e;
+      --accent-ink:#ffd8a8;
+      --accent-soft:#3a2a14;
+      --good:#4fae7a;
+      --good-soft:#173323;
+      --neutral-wire:#7ea6e0;
+      --neutral-wire-soft:#182636;
+      --danger:#e06a63;
+      --danger-soft:#3a1a17;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0d1013;
+    --surface:#171b1f;
+    --surface-2:#20262c;
+    --ink:#eef1f4;
+    --muted:#9aa5b0;
+    --line:#2c333a;
+    --accent:#e08a2e;
+    --accent-ink:#ffd8a8;
+    --accent-soft:#3a2a14;
+    --good:#4fae7a;
+    --good-soft:#173323;
+    --neutral-wire:#7ea6e0;
+    --neutral-wire-soft:#182636;
+    --danger:#e06a63;
+    --danger-soft:#3a1a17;
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"Source Sans 3", ui-sans-serif, system-ui, sans-serif;
+    padding-inline:20px;
+    padding-block:0 64px;
+  }
+  .wrap{max-width:920px; margin:0 auto;}
+  button{font-family:inherit;}
+
+  h1,h2,h3{
+    font-family:"Big Shoulders Display", "Arial Narrow", sans-serif;
+    font-weight:800;
+    text-transform:uppercase;
+    letter-spacing:.02em;
+    text-wrap:balance;
+    margin:0;
+  }
+  .mono{font-family:"JetBrains Mono", ui-monospace, monospace;}
+
+  /* ---------- Nameplate header ---------- */
+  .nameplate{
+    background:var(--surface-2);
+    border-bottom:3px solid var(--accent);
+    margin-inline:-20px;
+    padding:40px 20px 26px;
+  }
+  .nameplate-inner{max-width:920px; margin:0 auto;}
+  .eyebrow{
+    display:flex; align-items:center; gap:10px;
+    font-family:"JetBrains Mono", monospace;
+    font-size:.72rem; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--accent-ink);
+    margin-bottom:10px;
+  }
+  .eyebrow::before{
+    content:""; width:22px; height:2px; background:var(--accent); display:inline-block;
+  }
+  .nameplate h1{
+    font-size:clamp(2.1rem, 5.4vw, 3.2rem);
+    line-height:.98;
+    color:var(--ink);
+  }
+  .nameplate p{
+    max-width:60ch;
+    color:var(--muted);
+    font-size:1rem;
+    line-height:1.55;
+    margin-top:12px;
+  }
+
+  .btn-ghost{
+    background:var(--surface);
+    border:1px solid var(--line);
+    color:var(--ink);
+    font-size:.86rem;
+    font-weight:600;
+    padding:9px 16px;
+    border-radius:3px;
+    cursor:pointer;
+  }
+  .btn-ghost:hover{border-color:var(--accent);}
+  .btn-primary{
+    background:var(--accent);
+    border:1px solid var(--accent);
+    color:#1a1200;
+    font-weight:700;
+    font-size:.92rem;
+    padding:11px 20px;
+    border-radius:3px;
+    cursor:pointer;
+  }
+  .btn-primary:hover{filter:brightness(1.06);}
+  .btn-primary:disabled{opacity:.5; cursor:not-allowed;}
+
+  /* ---------- Menu screen ---------- */
+  section{padding-block:38px;}
+  .progress-overview{
+    display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+    margin-bottom:6px;
+  }
+  .progress-track{
+    flex:1 1 220px;
+    height:8px;
+    background:var(--surface-2);
+    border:1px solid var(--line);
+    border-radius:99px;
+    overflow:hidden;
+  }
+  .progress-fill{
+    height:100%;
+    background:var(--accent);
+    border-radius:99px;
+    transition:width .3s ease;
+  }
+  .progress-label{
+    font-family:"JetBrains Mono", monospace;
+    font-size:.8rem;
+    color:var(--muted);
+    flex:none;
+  }
+
+  .howto{
+    margin-top:26px;
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-left:3px solid var(--accent);
+    border-radius:4px;
+    padding:18px 20px;
+  }
+  .howto h2{font-size:1.05rem; margin-bottom:10px;}
+  .howto ol{margin:0; padding-left:1.2em; color:var(--muted); font-size:.92rem; line-height:1.65;}
+  .howto li::marker{color:var(--accent); font-family:"JetBrains Mono", monospace;}
+
+  .menu-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(260px,1fr));
+    gap:1px;
+    background:var(--line);
+    border:1px solid var(--line);
+    margin-top:26px;
+  }
+  .level-card{
+    background:var(--surface);
+    padding:20px;
+    display:flex; flex-direction:column; gap:10px;
+    position:relative;
+  }
+  .level-card.locked{opacity:.55;}
+  .level-num{
+    font-family:"JetBrains Mono", monospace;
+    font-size:.78rem;
+    color:var(--muted);
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .level-status{
+    font-family:"JetBrains Mono", monospace;
+    font-size:.7rem;
+    padding:2px 7px;
+    border-radius:3px;
+    border:1px solid var(--line);
+  }
+  .level-status.ok{color:var(--good); border-color:var(--good);}
+  .level-status.locked{color:var(--muted);}
+  .level-card h3{font-size:1.15rem;}
+  .level-card .plant{
+    font-family:"JetBrains Mono", monospace;
+    font-size:.76rem;
+    color:var(--accent-ink);
+    text-transform:none; letter-spacing:0; font-weight:600;
+  }
+  .level-card .desc{color:var(--muted); font-size:.86rem; line-height:1.5; flex:1;}
+  .level-card button{margin-top:4px; width:100%;}
+
+  .menu-footer{
+    display:flex; justify-content:flex-end; margin-top:22px;
+  }
+
+  /* ---------- Game screen ---------- */
+  .game-top{
+    display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;
+    margin-bottom:20px;
+  }
+  .stats-inline{
+    font-family:"JetBrains Mono", monospace;
+    font-size:.82rem;
+    color:var(--muted);
+    display:flex; gap:14px; flex-wrap:wrap;
+  }
+  .stats-inline b{color:var(--accent-ink);}
+
+  .game-layout{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) 260px;
+    gap:28px;
+    align-items:start;
+  }
+  @media (max-width:680px){ .game-layout{grid-template-columns:1fr;} }
+
+  .board-wrap{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:18px;
+    display:flex; justify-content:center;
+  }
+  .board{
+    display:inline-grid;
+    grid-template-columns:28px repeat(var(--size), 1fr);
+    gap:3px;
+  }
+  .board .hd{
+    display:flex; align-items:center; justify-content:center;
+    font-family:"JetBrains Mono", monospace;
+    font-size:.74rem;
+    color:var(--muted);
+  }
+  .cell{
+    width:clamp(38px, 9vw, 52px);
+    height:clamp(38px, 9vw, 52px);
+    background:var(--surface-2);
+    border:1px solid var(--line);
+    border-radius:3px;
+    cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    font-family:"JetBrains Mono", monospace;
+    font-weight:700;
+    font-size:1rem;
+    color:transparent;
+    transition:transform .08s ease;
+    padding:0;
+  }
+  .cell:hover:not(.hit):not(.miss):not(.sunk){
+    border-color:var(--accent);
+    background:var(--accent-soft);
+  }
+  .cell:active:not(.hit):not(.miss):not(.sunk){transform:scale(.94);}
+  .cell.miss{
+    background:var(--neutral-wire-soft);
+    border-color:var(--neutral-wire);
+    color:var(--neutral-wire);
+    cursor:default;
+  }
+  .cell.hit{
+    background:var(--accent-soft);
+    border-color:var(--accent);
+    color:var(--accent-ink);
+    cursor:default;
+  }
+  .cell.sunk{
+    background:var(--danger-soft);
+    border-color:var(--danger);
+    color:var(--danger);
+    cursor:default;
+  }
+
+  .roster{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:18px;
+    display:flex; flex-direction:column; gap:12px;
+  }
+  .roster h3{font-size:.95rem;}
+  .roster-item{
+    display:flex; align-items:center; gap:10px;
+    padding:8px 0;
+    border-top:1px solid var(--line);
+    font-size:.86rem;
+  }
+  .roster-item:first-of-type{border-top:none;}
+  .roster-dots{display:flex; gap:2px; flex:none;}
+  .roster-dot{
+    width:9px; height:9px;
+    border-radius:2px;
+    background:var(--surface-2);
+    border:1px solid var(--line);
+  }
+  .roster-dot.hit{background:var(--accent); border-color:var(--accent);}
+  .roster-dot.sunk{background:var(--danger); border-color:var(--danger);}
+  .roster-name{color:var(--muted); flex:1;}
+  .roster-name.found{color:var(--ink); font-weight:600;}
+  .roster-item.done .roster-name{color:var(--danger);}
+
+  /* ---------- Modal ---------- */
+  .modal-overlay{
+    position:fixed; inset:0;
+    background:rgba(10,12,14,.6);
+    display:flex; align-items:center; justify-content:center;
+    padding:20px;
+    z-index:50;
+  }
+  .modal-overlay[hidden]{display:none;}
+  .modal-card{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-left:4px solid var(--accent);
+    border-radius:5px;
+    padding:26px 26px 22px;
+    max-width:520px;
+    width:100%;
+    max-height:88vh;
+    overflow-y:auto;
+  }
+  .modal-eyebrow{
+    font-family:"JetBrains Mono", monospace;
+    font-size:.72rem; letter-spacing:.1em; text-transform:uppercase;
+    color:var(--accent-ink);
+    margin-bottom:10px;
+  }
+  .modal-card h3{
+    font-size:1.25rem;
+    line-height:1.2;
+    text-transform:none;
+    letter-spacing:0;
+    margin-bottom:18px;
+  }
+  .modal-options{display:flex; flex-direction:column; gap:8px;}
+  .opt-btn{
+    text-align:left;
+    background:var(--surface-2);
+    border:1px solid var(--line);
+    color:var(--ink);
+    padding:12px 14px;
+    border-radius:3px;
+    font-size:.92rem;
+    line-height:1.4;
+    cursor:pointer;
+  }
+  .opt-btn:hover:not(:disabled){border-color:var(--accent);}
+  .opt-btn:disabled{cursor:default;}
+  .opt-btn.opt-correct{
+    background:var(--good-soft);
+    border-color:var(--good);
+    color:var(--good);
+    font-weight:600;
+  }
+  .opt-btn.opt-wrong{
+    background:var(--danger-soft);
+    border-color:var(--danger);
+    color:var(--danger);
+  }
+  .modal-feedback{
+    margin-top:14px;
+    font-size:.88rem;
+    line-height:1.5;
+    padding:10px 12px;
+    border-radius:3px;
+  }
+  .modal-feedback.ok{background:var(--good-soft); color:var(--good);}
+  .modal-feedback.bad{background:var(--danger-soft); color:var(--danger);}
+  .modal-actions{
+    display:flex; justify-content:space-between; align-items:center;
+    margin-top:18px; gap:10px; flex-wrap:wrap;
+  }
+
+  .lc-stats{color:var(--muted); font-size:.94rem; line-height:1.6; margin-bottom:20px;}
+  .lc-stats b{color:var(--accent-ink);}
+
+  /* ---------- Toast ---------- */
+  .toast{
+    position:fixed; left:50%; bottom:26px; transform:translateX(-50%) translateY(20px);
+    background:var(--ink); color:var(--bg);
+    font-family:"JetBrains Mono", monospace;
+    font-size:.86rem;
+    padding:12px 18px;
+    border-radius:4px;
+    opacity:0;
+    transition:opacity .25s ease, transform .25s ease;
+    z-index:60;
+    pointer-events:none;
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+  footer{
+    padding-top:36px;
+    color:var(--muted);
+    font-size:.82rem;
+    display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap;
+  }
+</style>
+</head>
+<body>
+
+<div class="nameplate">
+  <div class="nameplate-inner">
+    <div class="eyebrow">Jogo educativo</div>
+    <h1 id="page-title">Batalha Naval Industrial</h1>
+    <p id="page-sub">Responda perguntas de automação industrial para autorizar cada disparo. Afunde todas as estações escondidas na planta para liberar a próxima fase.</p>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- ===== MENU ===== -->
+  <section id="screen-menu">
+    <div class="progress-overview">
+      <span class="progress-label" id="progress-label">0 / 5 fases concluídas</span>
+      <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    </div>
+
+    <div class="howto">
+      <h2>Como jogar</h2>
+      <ol>
+        <li>Cada fase representa um setor da fábrica com estações escondidas em um tabuleiro, como num jogo de batalha naval.</li>
+        <li>Clique em uma casa para tentar disparar. Antes do disparo, você precisa responder uma pergunta sobre o tema da fase.</li>
+        <li>Só acertando a pergunta o disparo é autorizado. Errando, o disparo é bloqueado e uma nova pergunta aparece — tente de novo.</li>
+        <li>Afunde todas as estações escondidas para concluir a fase e liberar a próxima.</li>
+      </ol>
+    </div>
+
+    <div class="menu-grid" id="menu-grid"></div>
+
+    <div class="menu-footer">
+      <button class="btn-ghost" id="btn-reset-progress">Reiniciar progresso</button>
+    </div>
+  </section>
+
+  <!-- ===== GAME ===== -->
+  <section id="screen-game" hidden>
+    <div class="game-top">
+      <button class="btn-ghost" id="btn-back-menu">← Voltar ao mapa</button>
+      <div class="stats-inline">
+        <span>Tiros: <b id="stat-shots">0</b></span>
+        <span>Estações afundadas: <b id="stat-sunk">0/0</b></span>
+        <span>Precisão nas perguntas: <b id="stat-accuracy">—</b></span>
+      </div>
+    </div>
+    <div class="game-layout">
+      <div class="board-wrap">
+        <div class="board" id="board"></div>
+      </div>
+      <div class="roster" id="roster">
+        <h3>Estações da fase</h3>
+        <div id="roster-list"></div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span>Batalha Naval Industrial — atividade gamificada</span>
+    <span>Progresso salvo neste navegador</span>
+  </footer>
+</div>
+
+<!-- ===== MODAL: pergunta ===== -->
+<div class="modal-overlay" id="modal-question" hidden>
+  <div class="modal-card">
+    <div class="modal-eyebrow">Responda para disparar — casa <span id="modal-cell"></span></div>
+    <h3 id="modal-question-text"></h3>
+    <div class="modal-options" id="modal-options"></div>
+    <div class="modal-feedback" id="modal-feedback" hidden></div>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="btn-cancel-shot">Cancelar</button>
+      <button class="btn-primary" id="btn-retry-question" hidden>Tentar nova pergunta</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL: fase concluída ===== -->
+<div class="modal-overlay" id="modal-levelcomplete" hidden>
+  <div class="modal-card">
+    <div class="modal-eyebrow" id="lc-eyebrow">Fase concluída</div>
+    <h3 id="lc-title">Setor neutralizado!</h3>
+    <p class="lc-stats" id="lc-stats"></p>
+    <button class="btn-primary" id="btn-lc-continue">Voltar ao mapa</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  var GRID_SIZE = 5;
+  var STORAGE_KEY = "bn-industrial-progress-v1";
+
+  var LEVELS = [
+    {
+      key:"fundamentos",
+      title:"Fundamentos de Automação",
+      plant:"Linha de Produção Alfa",
+      desc:"Conceitos essenciais: malha de controle, CLP, setpoint e a pirâmide da automação.",
+      ships:[
+        {name:"Esteira Transportadora", size:3},
+        {name:"Braço Robótico", size:2},
+        {name:"Painel de Comando", size:1}
+      ],
+      questions:[
+        {q:"O que é automação industrial?", options:[
+          "Substituição total de humanos por robôs em todas as tarefas",
+          "Uso de sistemas de controle (CLPs, sensores, atuadores) para executar processos com pouca intervenção humana",
+          "Um tipo de energia elétrica usada em fábricas",
+          "O nome dado a qualquer máquina elétrica"
+        ], correct:1},
+        {q:'Em uma malha de controle, o que é a "variável controlada"?', options:[
+          "O sinal enviado ao atuador",
+          "A fonte de energia do sistema",
+          "A grandeza do processo que o sistema deseja manter no valor desejado (ex: temperatura, nível)",
+          "O operador humano"
+        ], correct:2},
+        {q:"Qual a diferença entre malha aberta e malha fechada?", options:[
+          "Malha fechada usa realimentação (feedback) para corrigir o processo; malha aberta não",
+          "Malha aberta é mais precisa que malha fechada",
+          "Malha fechada não usa sensores",
+          "Não há diferença, são sinônimos"
+        ], correct:0},
+        {q:'O que é um "setpoint" em um sistema de controle?', options:[
+          "O erro entre a leitura e o valor real",
+          "O valor desejado (referência) que o sistema deve atingir e manter",
+          "O nome do sensor principal",
+          "O tempo de resposta do atuador"
+        ], correct:1},
+        {q:"Qual componente compara o valor medido com o setpoint e calcula a correção?", options:[
+          "O atuador",
+          "A fonte de alimentação",
+          "O transdutor",
+          "O controlador (ex: CLP ou controlador PID)"
+        ], correct:3},
+        {q:'Na pirâmide da automação industrial, o que fica acima do "chão de fábrica" (sensores/atuadores)?', options:[
+          "Nível de supervisão/controle (SCADA, CLP)",
+          "Nível estratégico da diretoria",
+          "Nível de vendas",
+          "Nível de manutenção apenas"
+        ], correct:0},
+        {q:"O que significa a sigla CLP?", options:[
+          "Circuito Lógico Paralelo",
+          "Comando Local de Potência",
+          "Controlador Lógico Programável",
+          "Controle de Linha de Produção"
+        ], correct:2},
+        {q:"Qual é uma vantagem direta da automação de processos industriais?", options:[
+          "Aumento do erro humano",
+          "Maior repetibilidade e produtividade",
+          "Eliminação total da necessidade de manutenção",
+          "Redução da qualidade do produto"
+        ], correct:1},
+        {q:"O que é um atuador em um sistema automatizado?", options:[
+          "Um sensor de temperatura",
+          "Um tipo de fusível",
+          "Um dispositivo que converte um sinal de controle em ação física (movimento, força)",
+          "Um software de supervisão"
+        ], correct:2},
+        {q:"SCADA é um sistema usado para:", options:[
+          "Soldar peças metálicas",
+          "Supervisionar e controlar dados de processos industriais remotamente",
+          "Substituir sensores",
+          "Gerar energia elétrica"
+        ], correct:1}
+      ]
+    },
+    {
+      key:"sensores",
+      title:"Sensores Industriais",
+      plant:"Linha de Inspeção Beta",
+      desc:"Indutivos, capacitivos, fotoelétricos, encoders e outros olhos e ouvidos da fábrica.",
+      ships:[
+        {name:"Túnel de Sensores", size:3},
+        {name:"Câmera de Visão", size:2},
+        {name:"Sensor Fotoelétrico", size:1}
+      ],
+      questions:[
+        {q:"Um sensor indutivo detecta:", options:[
+          "Apenas objetos metálicos",
+          "Qualquer tipo de material, inclusive líquidos",
+          "Apenas luz",
+          "Apenas temperatura"
+        ], correct:0},
+        {q:"Um sensor capacitivo é indicado para detectar:", options:[
+          "Apenas metais ferrosos",
+          "Materiais metálicos e não metálicos, como plásticos, líquidos e grãos",
+          "Somente cor",
+          "Somente som"
+        ], correct:1},
+        {q:"Um sensor fotoelétrico funciona com base em:", options:[
+          "Campo magnético",
+          "Variação de pressão",
+          "Feixe de luz (infravermelho, visível) interrompido ou refletido",
+          "Variação de capacitância"
+        ], correct:2},
+        {q:"O que um encoder rotativo mede tipicamente?", options:[
+          "Temperatura do motor",
+          "Posição, velocidade ou sentido de rotação de um eixo",
+          "Pressão do ar",
+          "Nível de um tanque"
+        ], correct:1},
+        {q:"Um termopar é um sensor usado para medir:", options:[
+          "Temperatura, a partir da diferença de tensão entre dois metais distintos",
+          "Distância",
+          "Velocidade angular",
+          "Nível de líquido"
+        ], correct:0},
+        {q:"Qual sensor é mais adequado para medir o nível de líquido em um tanque fechado, sem contato direto?", options:[
+          "Sensor ultrassônico",
+          "Sensor indutivo",
+          "Termopar",
+          "Encoder"
+        ], correct:0},
+        {q:"O que indica a sigla PNP/NPN em sensores de proximidade?", options:[
+          "Tipos de conexão elétrica da saída digital do sensor",
+          "Tipos de linguagem de programação",
+          "Marcas de sensores",
+          "Unidades de medida de pressão"
+        ], correct:0},
+        {q:"Um sensor de proximidade indutivo NÃO detecta:", options:[
+          "Aço",
+          "Alumínio",
+          "Madeira ou plástico",
+          "Ferro"
+        ], correct:2},
+        {q:"Qual a função de uma chave fim de curso (limit switch) em uma máquina?", options:[
+          "Medir temperatura",
+          "Detectar mecanicamente o final de um curso/movimento de um componente",
+          "Controlar a velocidade do motor",
+          "Gerar energia elétrica"
+        ], correct:1},
+        {q:"Sensores de pressão são comumente usados para monitorar:", options:[
+          "Cor de peças",
+          "Sistemas pneumáticos e hidráulicos",
+          "Velocidade de rotação apenas",
+          "Nível de ruído"
+        ], correct:1}
+      ]
+    },
+    {
+      key:"atuadores",
+      title:"Atuadores e Pneumática",
+      plant:"Célula de Montagem Gama",
+      desc:"Cilindros, válvulas, compressores, motores e inversores que fazem a planta se mover.",
+      ships:[
+        {name:"Cilindro Pneumático", size:3},
+        {name:"Compressor", size:2},
+        {name:"Motor Elétrico", size:1}
+      ],
+      questions:[
+        {q:"Um cilindro pneumático de simples ação:", options:[
+          "Avança e retorna usando ar comprimido nos dois sentidos",
+          "Avança com ar comprimido e retorna por mola ou força externa",
+          "Não utiliza ar comprimido",
+          "Só funciona com óleo hidráulico"
+        ], correct:1},
+        {q:"Um cilindro pneumático de dupla ação:", options:[
+          "Recebe ar comprimido para avançar e para retornar",
+          "Usa apenas mola para os dois movimentos",
+          "Não pode ser controlado por válvulas",
+          "É usado apenas em sistemas elétricos"
+        ], correct:0},
+        {q:"Qual a função de uma válvula solenoide em um sistema pneumático?", options:[
+          "Medir a pressão do ar",
+          "Controlar a passagem do ar comprimido através de um sinal elétrico",
+          "Resfriar o ar comprimido",
+          "Armazenar energia elétrica"
+        ], correct:1},
+        {q:"O que faz um compressor em um sistema pneumático industrial?", options:[
+          "Gera e comprime o ar que alimenta todo o sistema",
+          "Controla sensores fotoelétricos",
+          "Armazena dados do CLP",
+          "Substitui o motor elétrico"
+        ], correct:0},
+        {q:"Diferente da pneumática, a hidráulica industrial utiliza:", options:[
+          "Ar comprimido",
+          "Óleo (fluido) pressurizado",
+          "Água gelada apenas",
+          "Gás nitrogênio puro"
+        ], correct:1},
+        {q:"Um motor elétrico de indução trifásico é amplamente usado na indústria porque:", options:[
+          "É simples, robusto e de baixo custo de manutenção",
+          "Só funciona em corrente contínua",
+          "Não pode ser controlado por inversor de frequência",
+          "Não gera torque suficiente para cargas industriais"
+        ], correct:0},
+        {q:"Qual a função de um inversor de frequência ligado a um motor elétrico?", options:[
+          "Controlar a velocidade e o torque do motor variando frequência e tensão",
+          "Aumentar permanentemente a corrente do motor",
+          "Substituir o disjuntor do circuito",
+          "Medir a temperatura do motor"
+        ], correct:0},
+        {q:"Válvulas direcionais pneumáticas (ex: 5/2 vias) servem para:", options:[
+          "Direcionar o fluxo de ar para controlar o sentido de um atuador",
+          "Medir a vazão de água",
+          "Gerar eletricidade",
+          "Substituir sensores fotoelétricos"
+        ], correct:0},
+        {q:"Para que serve um atuador rotativo pneumático?", options:[
+          "Produzir movimento de giro/rotação, como em garras e mesas indexadoras",
+          "Medir pressão",
+          "Resfriar componentes eletrônicos",
+          "Substituir CLPs"
+        ], correct:0},
+        {q:"Um dos principais riscos de trabalhar com sistemas pneumáticos é:", options:[
+          "Nenhum risco, ar comprimido é sempre seguro",
+          "Liberação repentina de ar sob pressão, que pode causar acidentes",
+          "Choque elétrico direto do ar comprimido",
+          "Corrosão instantânea das tubulações"
+        ], correct:1}
+      ]
+    },
+    {
+      key:"clp",
+      title:"CLP e Lógica de Controle",
+      plant:"Sala de Controle Delta",
+      desc:"Entradas, saídas, ladder, temporizadores e o ciclo de varredura por trás do controle.",
+      ships:[
+        {name:"Rack de CLP", size:3},
+        {name:"IHM", size:2},
+        {name:"Fonte de Alimentação", size:1}
+      ],
+      questions:[
+        {q:"Em um CLP, as entradas digitais (DI) recebem sinais de dispositivos como:", options:[
+          "Sensores e botões (sinais discretos ligado/desligado)",
+          "Apenas motores",
+          "Apenas fontes de alimentação",
+          "Apenas o software de supervisão"
+        ], correct:0},
+        {q:"As saídas digitais (DO) de um CLP normalmente acionam:", options:[
+          "Atuadores como relés, contatores, válvulas solenoides e lâmpadas",
+          "Apenas sensores",
+          "Apenas o próprio CLP",
+          "Nenhum dispositivo externo"
+        ], correct:0},
+        {q:"Qual é a linguagem de programação de CLP mais tradicional, baseada em contatos elétricos?", options:[
+          "Ladder (diagrama de contatos)",
+          "Python",
+          "HTML",
+          "SQL"
+        ], correct:0},
+        {q:'Em ladder, um contato "normalmente aberto" (NA) energiza a saída quando:', options:[
+          "A entrada associada está ativa/energizada",
+          "A entrada está sempre desligada",
+          "Nunca energiza, independente da entrada",
+          "Apenas durante a inicialização do CLP"
+        ], correct:0},
+        {q:'O que é um "scan cycle" (ciclo de varredura) em um CLP?', options:[
+          "O processo repetido de ler entradas, executar o programa e atualizar saídas",
+          "Um tipo de sensor óptico",
+          "A limpeza física do equipamento",
+          "O tempo de vida útil da bateria do CLP"
+        ], correct:0},
+        {q:"Um temporizador (timer) em lógica de CLP é usado para:", options:[
+          "Contar peças produzidas",
+          "Atrasar ou controlar a duração de uma ação no tempo",
+          "Medir tensão elétrica",
+          "Substituir sensores de presença"
+        ], correct:1},
+        {q:"Um contador (counter) em um programa de CLP serve para:", options:[
+          "Contar eventos, como pulsos de um sensor ou peças em uma linha",
+          "Medir a temperatura ambiente",
+          "Controlar apenas a velocidade do motor",
+          "Armazenar senhas de acesso"
+        ], correct:0},
+        {q:"O que é uma entrada/saída analógica (AI/AO) em um CLP, diferente da digital?", options:[
+          "Representa um valor contínuo (ex: 4-20mA, 0-10V), não apenas ligado/desligado",
+          "É sempre igual à entrada digital",
+          "Só existe em sistemas domésticos",
+          "Não pode ser usada com sensores de temperatura ou pressão"
+        ], correct:0},
+        {q:"Um IHM (Interface Homem-Máquina) em uma célula automatizada serve para:", options:[
+          "Permitir que o operador visualize e interaja com o processo",
+          "Substituir o CLP completamente",
+          "Gerar energia para os sensores",
+          "Realizar soldas automáticas"
+        ], correct:0},
+        {q:"Antes de alterar o programa de um CLP em operação, uma boa prática é:", options:[
+          "Fazer as alterações direto sem avisar ninguém",
+          "Seguir o procedimento de segurança, avaliar riscos e, se necessário, parar o processo",
+          "Desligar todos os sensores permanentemente",
+          "Ignorar o manual do fabricante"
+        ], correct:1}
+      ]
+    },
+    {
+      key:"seguranca",
+      title:"Segurança Industrial e Elétrica",
+      plant:"Setor de Manutenção Épsilon",
+      desc:"Normas, bloqueio e etiquetagem, EPIs e boas práticas antes de tocar em qualquer painel.",
+      ships:[
+        {name:"Painel Elétrico Principal", size:3},
+        {name:"Quadro de Bloqueio (LOTO)", size:2},
+        {name:"Botão de Emergência", size:1}
+      ],
+      questions:[
+        {q:"A norma brasileira que trata de segurança no trabalho em máquinas e equipamentos é:", options:[
+          "NR-12",
+          "NR-35 apenas",
+          "ISO 9001",
+          "NBR 5410 apenas"
+        ], correct:0},
+        {q:"O que é um procedimento de bloqueio e etiquetagem (LOTO - Lockout/Tagout)?", options:[
+          "Um procedimento para isolar e sinalizar fontes de energia antes da manutenção, evitando acionamentos acidentais",
+          "Um tipo de sensor de segurança",
+          "Um software de supervisão",
+          "Um componente pneumático"
+        ], correct:0},
+        {q:"Qual EPI é essencial ao trabalhar próximo a partes móveis de máquinas industriais?", options:[
+          "Perfume",
+          "Óculos de proteção, luvas adequadas e vestimenta sem partes soltas",
+          "Relógio de pulso solto",
+          "Nenhum, não é necessário em ambientes automatizados"
+        ], correct:1},
+        {q:"Uma cortina de luz (light curtain) em uma célula robotizada serve para:", options:[
+          "Iluminar o ambiente apenas",
+          "Detectar a presença de uma pessoa na área de risco e parar a máquina",
+          "Medir a temperatura do robô",
+          "Substituir o CLP"
+        ], correct:1},
+        {q:"O que faz um disjuntor DR (diferencial residual) em uma instalação elétrica industrial?", options:[
+          "Aumenta a tensão da rede",
+          "Desliga o circuito ao detectar fuga de corrente, protegendo contra choques elétricos",
+          "Armazena energia para uso posterior",
+          "Substitui o aterramento"
+        ], correct:1},
+        {q:"Antes de intervir em um painel elétrico industrial, o procedimento correto é:", options:[
+          "Trabalhar com o circuito energizado para ganhar tempo",
+          "Desenergizar, bloquear e confirmar ausência de tensão com um multímetro",
+          "Confiar apenas na cor dos fios",
+          "Pedir para outra pessoa segurar os fios"
+        ], correct:1},
+        {q:"O que é um botão de emergência (E-stop) em uma máquina automatizada?", options:[
+          "Um dispositivo que, ao ser acionado, interrompe imediatamente o movimento perigoso da máquina",
+          "Um botão para aumentar a velocidade da produção",
+          "Um sensor de temperatura",
+          "Um tipo de sensor fotoelétrico"
+        ], correct:0},
+        {q:"Qual é o principal objetivo do aterramento (PE) em equipamentos industriais?", options:[
+          "Aumentar a corrente do equipamento",
+          "Desviar correntes de falha com segurança, protegendo pessoas e equipamentos",
+          "Deixar o equipamento mais rápido",
+          "Substituir o disjuntor"
+        ], correct:1},
+        {q:"O que caracteriza uma área classificada (com risco de explosão) em uma indústria?", options:[
+          "Área onde não há necessidade de EPI",
+          "Área com presença de gases, vapores ou poeiras inflamáveis que exige equipamentos especiais",
+          "Área apenas com risco de ruído",
+          "Área reservada para escritórios"
+        ], correct:1},
+        {q:"Ao identificar uma falha elétrica em uma máquina automatizada, o procedimento correto é:", options:[
+          "Tentar consertar sozinho, sem qualificação e sem desligar",
+          "Sinalizar, isolar a máquina e acionar um profissional qualificado",
+          "Ignorar e continuar a produção",
+          "Aumentar a velocidade da linha para compensar"
+        ], correct:1}
+      ]
+    }
+  ];
+
+  // ---------- Persistence ----------
+  function loadProgress(){
+    try{
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if(raw){
+        var p = JSON.parse(raw);
+        if(p && typeof p.unlocked === "number" && Array.isArray(p.completed) && p.completed.length === LEVELS.length){
+          return p;
+        }
+      }
+    }catch(e){}
+    return { unlocked:1, completed: LEVELS.map(function(){ return false; }) };
+  }
+  function saveProgress(){
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(progress)); }catch(e){}
+  }
+  var progress = loadProgress();
+
+  // ---------- Helpers ----------
+  function shuffle(arr){
+    var a = arr.slice();
+    for(var i=a.length-1;i>0;i--){
+      var j = Math.floor(Math.random()*(i+1));
+      var t=a[i]; a[i]=a[j]; a[j]=t;
+    }
+    return a;
+  }
+  function cellLabel(idx){
+    var row = Math.floor(idx/GRID_SIZE), col = idx%GRID_SIZE;
+    return String.fromCharCode(65+row) + (col+1);
+  }
+  function showToast(msg){
+    var t = document.getElementById("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(showToast._tid);
+    showToast._tid = setTimeout(function(){ t.classList.remove("show"); }, 2200);
+  }
+
+  function placeShips(levelDef){
+    var grid = new Array(GRID_SIZE*GRID_SIZE).fill(null);
+    var ships = levelDef.ships.map(function(s){ return { name:s.name, size:s.size, cells:[], hitCount:0, sunk:false }; });
+    for(var i=0;i<ships.length;i++){
+      var placed=false, attempts=0;
+      while(!placed && attempts<800){
+        attempts++;
+        var horiz = Math.random() < 0.5;
+        var len = ships[i].size;
+        var row = Math.floor(Math.random()*GRID_SIZE);
+        var col = Math.floor(Math.random()*GRID_SIZE);
+        var cells = [];
+        var ok = true;
+        for(var k=0;k<len;k++){
+          var r = horiz ? row : row+k;
+          var c = horiz ? col+k : col;
+          if(r>=GRID_SIZE || c>=GRID_SIZE){ ok=false; break; }
+          var idx = r*GRID_SIZE + c;
+          if(grid[idx] !== null){ ok=false; break; }
+          cells.push(idx);
+        }
+        if(ok){
+          cells.forEach(function(idx){ grid[idx]=i; });
+          ships[i].cells = cells;
+          placed = true;
+        }
+      }
+    }
+    return { grid: grid, ships: ships };
+  }
+
+  function buildPool(questions){
+    return shuffle(questions.map(function(_,i){ return i; }));
+  }
+
+  // ---------- Game state ----------
+  var game = null;
+
+  function startLevel(i){
+    var def = LEVELS[i];
+    var placed = placeShips(def);
+    game = {
+      levelIndex: i,
+      grid: placed.grid,
+      ships: placed.ships,
+      cellState: new Array(GRID_SIZE*GRID_SIZE).fill("hidden"),
+      shots:0, hits:0,
+      quizTotal:0, quizCorrect:0,
+      pool: buildPool(def.questions),
+      lastQuestionIdx: null,
+      targetCell: null
+    };
+    document.getElementById("page-title").textContent = def.title;
+    document.getElementById("page-sub").textContent = def.plant + " — responda certo para autorizar cada disparo.";
+    document.getElementById("screen-menu").hidden = true;
+    document.getElementById("screen-game").hidden = false;
+    renderBoard();
+    renderRoster();
+    updateStatsInline();
+  }
+
+  function renderBoard(){
+    var def = LEVELS[game.levelIndex];
+    var board = document.getElementById("board");
+    board.style.setProperty("--size", GRID_SIZE);
+    var html = '<div class="hd"></div>';
+    for(var c=0;c<GRID_SIZE;c++){ html += '<div class="hd">'+(c+1)+'</div>'; }
+    for(var r=0;r<GRID_SIZE;r++){
+      html += '<div class="hd">'+String.fromCharCode(65+r)+'</div>';
+      for(var c2=0;c2<GRID_SIZE;c2++){
+        var idx = r*GRID_SIZE+c2;
+        var state = game.cellState[idx];
+        var cls = "cell" + (state !== "hidden" ? " "+state : "");
+        var symbol = state === "miss" ? "•" : (state === "hit" || state === "sunk") ? "×" : "";
+        html += '<button type="button" class="'+cls+'" data-idx="'+idx+'" aria-label="Disparar na casa '+cellLabel(idx)+'">'+symbol+'</button>';
+      }
+    }
+    board.innerHTML = html;
+    Array.prototype.forEach.call(board.querySelectorAll(".cell"), function(btn){
+      btn.addEventListener("click", function(){
+        onCellClick(parseInt(this.getAttribute("data-idx"), 10));
+      });
+    });
+    void def;
+  }
+
+  function renderRoster(){
+    var list = document.getElementById("roster-list");
+    var html = "";
+    game.ships.forEach(function(ship){
+      var dots = "";
+      for(var i=0;i<ship.size;i++){
+        var dotCls = "roster-dot" + (ship.sunk ? " sunk" : (i < ship.hitCount ? " hit" : ""));
+        dots += '<span class="'+dotCls+'"></span>';
+      }
+      var name = ship.sunk ? ship.name : (ship.hitCount>0 ? "??? (localizado)" : "???");
+      html += '<div class="roster-item'+(ship.sunk?" done":"")+'">'+
+        '<span class="roster-dots">'+dots+'</span>'+
+        '<span class="roster-name'+(ship.sunk?" found":"")+'">'+name+'</span>'+
+        '</div>';
+    });
+    list.innerHTML = html;
+  }
+
+  function updateStatsInline(){
+    document.getElementById("stat-shots").textContent = game.shots;
+    var sunkCount = game.ships.filter(function(s){ return s.sunk; }).length;
+    document.getElementById("stat-sunk").textContent = sunkCount + "/" + game.ships.length;
+    var accEl = document.getElementById("stat-accuracy");
+    if(game.quizTotal === 0){ accEl.textContent = "—"; }
+    else{ accEl.textContent = Math.round(100*game.quizCorrect/game.quizTotal) + "%"; }
+  }
+
+  function onCellClick(idx){
+    if(game.cellState[idx] !== "hidden") return;
+    if(!document.getElementById("modal-question").hidden) return;
+    game.targetCell = idx;
+    openQuestionModal();
+  }
+
+  function nextQuestion(){
+    var def = LEVELS[game.levelIndex];
+    if(game.pool.length === 0){
+      game.pool = buildPool(def.questions);
+      if(game.pool.length > 1 && game.pool[0] === game.lastQuestionIdx){
+        var tmp = game.pool[0]; game.pool[0] = game.pool[1]; game.pool[1] = tmp;
+      }
+    }
+    var qi = game.pool.shift();
+    game.lastQuestionIdx = qi;
+    return def.questions[qi];
+  }
+
+  function openQuestionModal(){
+    var q = nextQuestion();
+    var modal = document.getElementById("modal-question");
+    document.getElementById("modal-cell").textContent = cellLabel(game.targetCell);
+    document.getElementById("modal-question-text").textContent = q.q;
+    var feedback = document.getElementById("modal-feedback");
+    feedback.hidden = true;
+    feedback.className = "modal-feedback";
+    document.getElementById("btn-retry-question").hidden = true;
+
+    var optsWrap = document.getElementById("modal-options");
+    var opts = shuffle(q.options.map(function(text, i){ return { text:text, correct: i===q.correct }; }));
+    optsWrap.innerHTML = "";
+    opts.forEach(function(opt){
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "opt-btn";
+      btn.textContent = opt.text;
+      btn.dataset.correct = opt.correct ? "1" : "0";
+      btn.addEventListener("click", function(){ answerOption(btn, opt.correct, optsWrap); });
+      optsWrap.appendChild(btn);
+    });
+
+    modal.hidden = false;
+  }
+
+  function answerOption(btn, isCorrect, optsWrap){
+    var buttons = Array.prototype.slice.call(optsWrap.querySelectorAll(".opt-btn"));
+    buttons.forEach(function(b){ b.disabled = true; });
+    game.quizTotal++;
+    var feedback = document.getElementById("modal-feedback");
+    feedback.hidden = false;
+
+    if(isCorrect){
+      btn.classList.add("opt-correct");
+      game.quizCorrect++;
+      feedback.className = "modal-feedback ok";
+      feedback.textContent = "Resposta correta — disparo autorizado!";
+      setTimeout(function(){
+        document.getElementById("modal-question").hidden = true;
+        var idx = game.targetCell;
+        game.targetCell = null;
+        resolveShot(idx);
+      }, 650);
+    }else{
+      btn.classList.add("opt-wrong");
+      buttons.forEach(function(b){
+        if(b.dataset.correct === "1"){ b.classList.add("opt-correct"); }
+      });
+      feedback.className = "modal-feedback bad";
+      feedback.textContent = "Resposta incorreta — o disparo falhou. Tente outra pergunta para tentar de novo.";
+      document.getElementById("btn-retry-question").hidden = false;
+    }
+  }
+
+  function resolveShot(idx){
+    game.shots++;
+    var shipIdx = game.grid[idx];
+    if(shipIdx === null){
+      game.cellState[idx] = "miss";
+    }else{
+      game.cellState[idx] = "hit";
+      game.hits++;
+      var ship = game.ships[shipIdx];
+      ship.hitCount++;
+      if(ship.hitCount === ship.size){
+        ship.sunk = true;
+        ship.cells.forEach(function(c){ game.cellState[c] = "sunk"; });
+        showToast(ship.name + " afundado!");
+      }
+    }
+    renderBoard();
+    renderRoster();
+    updateStatsInline();
+    if(game.ships.every(function(s){ return s.sunk; })){
+      setTimeout(onLevelComplete, 500);
+    }
+  }
+
+  function onLevelComplete(){
+    var i = game.levelIndex;
+    progress.completed[i] = true;
+    progress.unlocked = Math.min(LEVELS.length, Math.max(progress.unlocked, i+2));
+    saveProgress();
+
+    var isLast = i === LEVELS.length - 1;
+    document.getElementById("lc-eyebrow").textContent = isLast ? "Missão concluída" : "Fase concluída";
+    document.getElementById("lc-title").textContent = isLast ? "Fábrica 100% operacional!" : "Setor neutralizado!";
+    var acc = game.quizTotal ? Math.round(100*game.quizCorrect/game.quizTotal) : 0;
+    var text = "Tiros disparados: <b>"+game.shots+"</b> · Precisão nas perguntas: <b>"+acc+"%</b>.";
+    if(isLast){
+      text += " Você concluiu todas as fases da Batalha Naval Industrial. Parabéns!";
+    }else{
+      text += " A próxima fase já está liberada no mapa.";
+    }
+    document.getElementById("lc-stats").innerHTML = text;
+    document.getElementById("modal-levelcomplete").hidden = false;
+  }
+
+  function goToMenu(){
+    document.getElementById("screen-game").hidden = true;
+    document.getElementById("screen-menu").hidden = false;
+    document.getElementById("page-title").textContent = "Batalha Naval Industrial";
+    document.getElementById("page-sub").textContent = "Responda perguntas de automação industrial para autorizar cada disparo. Afunde todas as estações escondidas na planta para liberar a próxima fase.";
+    renderMenu();
+  }
+
+  function renderMenu(){
+    var completedCount = progress.completed.filter(Boolean).length;
+    document.getElementById("progress-label").textContent = completedCount + " / " + LEVELS.length + " fases concluídas";
+    document.getElementById("progress-fill").style.width = Math.round(100*completedCount/LEVELS.length) + "%";
+
+    var grid = document.getElementById("menu-grid");
+    var html = "";
+    LEVELS.forEach(function(def, i){
+      var locked = i >= progress.unlocked;
+      var done = progress.completed[i];
+      html += '<div class="level-card'+(locked?" locked":"")+'">'+
+        '<div class="level-num"><span>FASE 0'+(i+1)+'</span>'+
+          '<span class="level-status '+(locked?"locked":(done?"ok":""))+'">'+(locked?"bloqueada":(done?"concluída":"disponível"))+'</span>'+
+        '</div>'+
+        '<h3>'+def.title+'</h3>'+
+        '<div class="plant">'+def.plant+'</div>'+
+        '<p class="desc">'+def.desc+'</p>'+
+        '<button type="button" class="btn-primary" data-level="'+i+'" '+(locked?"disabled":"")+'>'+(done?"Jogar novamente":"Iniciar fase")+'</button>'+
+        '</div>';
+    });
+    grid.innerHTML = html;
+    Array.prototype.forEach.call(grid.querySelectorAll("button[data-level]"), function(btn){
+      btn.addEventListener("click", function(){
+        startLevel(parseInt(this.getAttribute("data-level"), 10));
+      });
+    });
+  }
+
+  // ---------- Wire up static handlers ----------
+  document.getElementById("btn-back-menu").addEventListener("click", goToMenu);
+
+  document.getElementById("btn-cancel-shot").addEventListener("click", function(){
+    document.getElementById("modal-question").hidden = true;
+    game.targetCell = null;
+  });
+
+  document.getElementById("btn-retry-question").addEventListener("click", function(){
+    openQuestionModal();
+  });
+
+  document.getElementById("btn-lc-continue").addEventListener("click", function(){
+    document.getElementById("modal-levelcomplete").hidden = true;
+    goToMenu();
+  });
+
+  document.getElementById("btn-reset-progress").addEventListener("click", function(){
+    if(window.confirm("Reiniciar todo o progresso salvo neste navegador?")){
+      progress = { unlocked:1, completed: LEVELS.map(function(){ return false; }) };
+      saveProgress();
+      renderMenu();
+    }
+  });
+
+  renderMenu();
+})();
+</script>
+</body>
+</html>
